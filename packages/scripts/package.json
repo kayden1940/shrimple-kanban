@@ -1,8 +1,8 @@
 {
-  "name": "@monorepo-template/scripts",
+  "name": "@shrimple-kanban/scripts",
   "version": "0.0.0",
   "dependencies": {
-    "@monorepo-template/core": "*",
+    "@shrimple-kanban/core": "*",
     "sst": "*"
   },
   "scripts": {

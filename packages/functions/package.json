@@ -1,8 +1,8 @@
 {
-  "name": "@monorepo-template/functions",
+  "name": "@shrimple-kanban/functions",
   "version": "0.0.0",
   "dependencies": {
-    "@monorepo-template/core": "*",
+    "@shrimple-kanban/core": "*",
     "sst": "*"
   },
   "devDependencies": {
