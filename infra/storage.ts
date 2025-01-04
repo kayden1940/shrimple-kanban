@@ -2,8 +2,8 @@
 
 export const table = new sst.aws.Dynamo("Kanban", {
     fields: {
-        bid: "string",   // Board ID
-        id: "string",    // Column, Card, or metadata
+        prop: "string",   // board, meta
+        adr: "string",    // bd#1/cn#1, bd#1/cd#1, bd#1/md#
         // title: "string", // Title of the column, card or board
         // //@ts-expect-error
         // columns: "sets", // Set of column IDs
@@ -12,6 +12,7 @@ export const table = new sst.aws.Dynamo("Kanban", {
         // //@ts-expect-error
         // cards: "sets",   // Set of card IDs
         // color: "number", // Color code for cards
+        // data:
     },
-    primaryIndex: { hashKey: "bid", rangeKey: "id" },  // Partition and sort key configuration
+    primaryIndex: { hashKey: "prop", rangeKey: "adr" },  // Partition and sort key configuration
 });

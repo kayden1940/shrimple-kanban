@@ -1,0 +1,14 @@
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"id": 1, "title": "board name"}' \
+https://9j0oe64hk0.execute-api.us-east-1.amazonaws.com/boards
+
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"bdId": 1, "id": 1, "title": "column name", "cn": []}' \
+https://9j0oe64hk0.execute-api.us-east-1.amazonaws.com/columns
+
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"bdId": 1, "cnId": 1, "lastId": 0, "title": "card name", "prevCn": []}' \
+https://9j0oe64hk0.execute-api.us-east-1.amazonaws.com/cards

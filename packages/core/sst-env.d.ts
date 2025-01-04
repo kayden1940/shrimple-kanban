@@ -10,6 +10,10 @@ declare module "sst" {
       "type": "sst.aws.ApiGatewayV2"
       "url": string
     }
+    "Frontend": {
+      "type": "sst.aws.StaticSite"
+      "url": string
+    }
     "Kanban": {
       "name": string
       "type": "sst.aws.Dynamo"
