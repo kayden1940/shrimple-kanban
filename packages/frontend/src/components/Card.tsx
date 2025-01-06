@@ -5,6 +5,8 @@ import { DropIndicator } from "../components";
 export default function Card({
 	title,
 	handleDragStart,
+	belongsToColumnIndex,
+	index
 }: TcardPropsNew) {
 	return (
 		<>
@@ -15,8 +17,9 @@ export default function Card({
 			<motion.div
 				layout
 				layoutId={title}
+				data-column={belongsToColumnIndex}
 				draggable="true"
-				onDragStart={(e) => handleDragStart(e, title)}
+				onDragStart={(e: DragEvent) => handleDragStart(e, { title: title, belongsToColumnIndex: belongsToColumnIndex, columnCardIndex: index })}
 				className="cursor-grab rounded border border-neutral-700 bg-neutral-800 p-3 active:cursor-grabbing">
 				<p className="text-sm text-neutral-100">{title}</p>
 			</motion.div>

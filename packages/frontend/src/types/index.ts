@@ -40,19 +40,31 @@ export type TcardProps = {
     id: string;
     column: ColumnType;
     title: string;
-    handleDragStart: (e: MouseEvent | TouchEvent | PointerEvent, card: CardTypes) => void;
+    handleDragStart: (e: MouseEvent | TouchEvent | PointerEvent, card: string) => void;
 };
 
 //new stuffs below
 
+export type TColumnTypeNew = {
+    title: string;
+    cards: string[],
+    color?: number
+};
+
+
 export type TColumnPropsNew = {
     title: string;
     cards: string[],
+    index: number,
     color?: number,
-    setColumns?: Dispatch<SetStateAction<TColumnPropsNew[]>>;
+    columns: TColumnTypeNew[],
+    setColumns: Dispatch<SetStateAction<TColumnTypeNew[]>>;
 };
 
+// MouseEvent | TouchEvent | PointerEvent |
 export type TcardPropsNew = {
     title: string;
-    handleDragStart: (e: MouseEvent | TouchEvent | PointerEvent, card: string) => void;
+    handleDragStart: (e: DragEvent, card: { title: string, belongsToColumnIndex: number, columnCardIndex: number }) => void;
+    index: number;
+    belongsToColumnIndex: number;
 };
