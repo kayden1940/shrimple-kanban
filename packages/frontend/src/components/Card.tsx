@@ -20,7 +20,7 @@ export default function Card({
 				data-column={belongsToColumnIndex}
 				draggable="true"
 				onDragStart={(e: DragEvent) => handleDragStart(e, { title: title, belongsToColumnIndex: belongsToColumnIndex, columnCardIndex: index })}
-				className="cursor-grab rounded border border-neutral-700 bg-neutral-800 p-3 active:cursor-grabbing">
+				className="cursor-grab border border-neutral-400 bg-neutral-800 p-3 active:cursor-grabbing">
 				<p className="text-sm text-neutral-100">{title}</p>
 			</motion.div>
 		</>

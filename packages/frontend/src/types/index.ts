@@ -57,9 +57,11 @@ export type TColumnPropsNew = {
     cards: string[],
     index: number,
     color?: number,
-    columns: TColumnTypeNew[],
-    setColumns: Dispatch<SetStateAction<TColumnTypeNew[]>>;
+    columns: TColumnsState,
+    setColumns: Dispatch<SetStateAction<TColumnsState>>;
 };
+
+export type TColumnsState = { meta: Record<string, unknown>, columns: TColumnTypeNew[] }
 
 // MouseEvent | TouchEvent | PointerEvent |
 export type TcardPropsNew = {

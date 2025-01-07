@@ -1,0 +1,16 @@
+drag zone column update
++card drag snap update
+card drag hold animtion
+    insert a placholder card same size as the holding one, into the mouse position(handleDragEnd)
+        e:
+            placholder card
+                insert, remove
+            dragging card
+            column
+
+        approach #1
+            dragging indicator in column
+                takes refactor
+                    +column state
+                    update dragging on drag
+                    group filter

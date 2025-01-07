@@ -12,7 +12,7 @@ export default function Column({
     columns,
     setColumns,
 }: TColumnPropsNew) {
-    // const [active, setActive] = useState(false);
+    const [active, setActive] = useState(false);
 
     // useEffect(() => {
     //     console.log('columns', columns)
@@ -26,40 +26,22 @@ export default function Column({
         e.dataTransfer!.setData("title", card.title);
         e.dataTransfer!.setData("belongsToColumnIndex", `${card.belongsToColumnIndex}`);
         e.dataTransfer!.setData("columnCardIndex", `${card.columnCardIndex}`);
+        setColumns(prev => ({ meta: { ...prev.meta, dragging: card }, columns: prev.columns }))
     };
 
-    const getCardInsertIndex = (e: React.DragEvent<HTMLDivElement>, cardELs: any[]) => {
-        return cardELs.findLastIndex(c => {
-            console.log(e.clientY, c.getBoundingClientRect().y);
-            return e.clientY > c.getBoundingClientRect().y
+    const getCardInsertIndex = (e: React.DragEvent<HTMLDivElement>, cardELs: HTMLDivElement[]) => {
+        return cardELs.findLastIndex((c: HTMLDivElement) => {
+            return e.clientY > ((c.getBoundingClientRect().top + c.getBoundingClientRect().bottom) / 2)
         })
-
-        // const el = indicators.reduce(
-        //     (closest: { offset: number; }, child: { getBoundingClientRect: () => any; }) => {
-        //         const box = child.getBoundingClientRect();
-        //         const offset = e.clientY - (box.top + DISTANCE_OFFSET);
-        //         if (offset < 0 && offset > closest.offset) {
-        //             return { offset: offset, element: child };
-        //         } else {
-        //             return closest;
-        //         }
-        //     },
-        //     {
-        //         offset: Number.NEGATIVE_INFINITY,
-        //         element: indicators[indicators.length - 1],
-        //     },
-        // );
-
-        // return el;
     };
 
     const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
         const title = e.dataTransfer.getData("title");
         const cardBelongsToColumnIndex = Number(e.dataTransfer.getData("belongsToColumnIndex"));
         const columnCardIndex = Number(e.dataTransfer.getData("columnCardIndex"));
-        const getCards = () => Array.from(document.querySelectorAll(`[data-column="${index}"]`))
+        const getCards = () => Array.from(document.querySelectorAll(`[data-column="${index}"]`)) as unknown as HTMLDivElement[]
         const cardInsertIndex = Math.max(getCardInsertIndex(e, getCards()) + 1, 0)
-        const newColumns = columns.reduce((accu, curr, i) => {
+        const newColumns = columns.columns.reduce((accu, curr, i) => {
             if (i === cardBelongsToColumnIndex) {
                 //remove the old card
                 curr.cards.splice(columnCardIndex, 1)
@@ -69,45 +51,23 @@ export default function Column({
                 curr.cards.splice(cardInsertIndex, 0, title)
             }
             accu.push(curr)
-            // console.log('accu', accu)
             return accu
         }, [] as TColumnTypeNew[])
-        console.log('newColumns', newColumns)
-        setColumns(newColumns)
-
-
-        // const before = element.dataset.before || "-1";
-
-        // if (before !== cardId) {
-        //     let copy = [...cards];
-
-        //     let cardToTransfer = copy.find((c) => c.id === cardId);
-        //     if (!cardToTransfer) return;
-        //     cardToTransfer = { ...cardToTransfer, column };
-
-        //     copy = copy.filter((c) => c.id !== cardId);
-
-        //     const moveToBack = before === "-1";
-
-        //     if (moveToBack && cardToTransfer) {
-        //         copy.push(cardToTransfer);
-        //     } else {
-        //         const insertAtIndex = copy.findIndex((el) => el.id === before);
-        //         if (insertAtIndex === undefined) return;
-
-        //         copy.splice(insertAtIndex, 0, cardToTransfer);
-        //     }
-
-        //     setCards(copy);
-        // }
+        setColumns(prev => ({ meta: prev.meta, columns: newColumns }))
+        setActive(false)
     };
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
-        console.log("handleDragOver");
+        // console.log("handleDragOver");
         // highlightIndicator(e);
-
-        // setActive(true);
+        const title = e.dataTransfer.getData("title");
+        const cardBelongsToColumnIndex = Number(e.dataTransfer.getData("belongsToColumnIndex"));
+        const columnCardIndex = Number(e.dataTransfer.getData("columnCardIndex"));
+        const getCards = () => Array.from(document.querySelectorAll(`[data-column="${index}"]`)) as unknown as HTMLDivElement[]
+        const cardInsertIndex = Math.max(getCardInsertIndex(e, getCards()) + 1, 0)
+        setColumns(prev => ({ meta: { ...prev.meta, draggingTo: { columnIndex: index, cardInsertIndex: cardInsertIndex } }, columns: prev.columns }))
+        setActive(true);
     };
 
     // const clearHighlights = (els?: Element[]) => {
@@ -161,7 +121,7 @@ export default function Column({
     const handleDragLeave = () => {
         console.log("handleDragLeave");
         // clearHighlights();
-        // setActive(false);
+        setActive(false);
     };
 
     // const filteredCards = cards.filter((c) => c.column === column);
@@ -178,12 +138,12 @@ export default function Column({
     return (
         // tbu: bringing DropIndicator and motion.div to here
         // tbu: DropIndicator now needs to support vertical
-        <div className="w-56 shrink-0 cursor-col-resize"
+        <div className="w-56 shrink-0 cursor-col-resize h-full"
         >
             {/* {
                 cards.map(c => (<Card title={c} />))
             } */}
-            <div className="mb-3 flex items-center justify-between flex-col bg-red-400 h-full"
+            <div className="mb-3 flex items-center justify-between flex-col bg-slate-100 h-full"
                 onDrop={handleDragEnd}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -192,23 +152,8 @@ export default function Column({
                 {/* <span className="rounded text-sm text-neutral-400">
                     {filteredCards.length}
                 </span> */}
-                <div
-                    // ${active ? "bg-red-800/50" : "bg-neutral-800/0"}
-                    className={`h-full w-full transition-colors`}
-                // onDrop
-                // onDragOver
-                // onDragLeave
-                >
+                <div className={`h-full w-full transition-colors ${active ? "bg-lime-100/50" : "bg-neutral-800/0"}`}>
                     {cards.map((c, i) => <Card belongsToColumnIndex={index} index={i} key={c} title={c} handleDragStart={handleDragStart} />)}
-                    {/* {filteredCards.map((c) => {
-                    return (
-                        <Card
-                            key={c.id}
-                            {...c}
-                            handleDragStart={handleDragStart}
-                        />
-                    );
-                })} */}
                     {/* <DropIndicator
                         beforeId={null}
                         column={column}
@@ -219,6 +164,6 @@ export default function Column({
                     /> */}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
