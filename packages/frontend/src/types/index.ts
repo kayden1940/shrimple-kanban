@@ -1,3 +1,4 @@
+import { DragControls } from "motion/react";
 import { Dispatch, SetStateAction } from "react";
 
 export type CardType = {
@@ -51,22 +52,28 @@ export type TColumnTypeNew = {
     color?: number
 };
 
+export type TBoardMeta = {
+    draggingCard: { title: string, c: number, r: number } | null
+    draggingCardTo: { c: number, r: number } | null
+}
 
 export type TColumnPropsNew = {
-    title: string;
-    cards: string[],
     index: number,
-    color?: number,
-    columns: TColumnsState,
-    setColumns: Dispatch<SetStateAction<TColumnsState>>;
+    columns: TColumnTypeNew[],
+    setColumns: Dispatch<SetStateAction<TColumnTypeNew[]>>;
+    boardMeta: TBoardMeta;
+    setBoardMeta: Dispatch<SetStateAction<TBoardMeta>>;
 };
 
 export type TColumnsState = { meta: Record<string, unknown>, columns: TColumnTypeNew[] }
 
 // MouseEvent | TouchEvent | PointerEvent |
+// { title: string, c: number, r: number })
 export type TcardPropsNew = {
     title: string;
-    handleDragStart: (e: DragEvent, card: { title: string, belongsToColumnIndex: number, columnCardIndex: number }) => void;
+    handleDragStart: (e: DragEvent, card: { title: string, c: number, r: number }) => void;
     index: number;
-    belongsToColumnIndex: number;
+    // dragging: Boolean;
+    // placeHold: Boolean;
+    c: number;
 };

@@ -1,28 +1,30 @@
-import { TcardPropsNew } from "../types";
-import { motion } from "framer-motion";
-import { DropIndicator } from "../components";
+// import React from 'react'
 
-export default function Card({
-	title,
-	handleDragStart,
-	belongsToColumnIndex,
-	index
-}: TcardPropsNew) {
-	return (
-		<>
-			{/* <DropIndicator
-				beforeId={id}
-				column={column}
-			/> */}
-			<motion.div
-				layout
-				layoutId={title}
-				data-column={belongsToColumnIndex}
-				draggable="true"
-				onDragStart={(e: DragEvent) => handleDragStart(e, { title: title, belongsToColumnIndex: belongsToColumnIndex, columnCardIndex: index })}
-				className="cursor-grab border border-neutral-400 bg-neutral-800 p-3 active:cursor-grabbing">
-				<p className="text-sm text-neutral-100">{title}</p>
-			</motion.div>
-		</>
-	);
+// function Card() {
+//     return (
+//         <div>Card</div>
+//     )
+// }
+
+// export default Card
+
+import React from 'react';
+import { useDraggable } from '@dnd-kit/core';
+
+function Card(props) {
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+        id: props.card,
+    });
+    const style = transform ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+    } : undefined;
+
+
+    return (
+        <button ref={setNodeRef} style={style} {...listeners} {...attributes}>
+            {props.card}
+        </button>
+    );
 }
+
+export default Card

@@ -5,7 +5,8 @@ import './App.css'
 import { useSelector } from "@xstate/react";
 import { machine } from "./machine"
 import { createActor } from 'xstate';
-import BoardContainer from "./components/BoardContainer";
+// import BoardContainer from "./components/BoardContainer";
+// import BoardDetail from './pages/BoardDetail';
 
 export const actor = createActor(machine);
 actor.start();
@@ -29,7 +30,8 @@ function App() {
   //   } */}
   // </>
   return (
-    <BoardContainer />
+    // <BoardDetail />
+    <h1>here</h1>
   )
 }
 
