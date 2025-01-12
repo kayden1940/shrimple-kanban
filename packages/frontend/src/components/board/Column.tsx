@@ -1,437 +1,336 @@
-import React, {
-    memo,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
-
-import { createPortal } from "react-dom";
-import invariant from "tiny-invariant";
-
-import { IconButton } from "@atlaskit/button/new";
-// import DropdownMenu, {
-//     type CustomTriggerProps,
-//     DropdownItem,
-//     DropdownItemGroup,
-// } from "@atlaskit/dropdown-menu";
-import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
-// eslint-disable-next-line @atlaskit/design-system/no-banned-imports
-import mergeRefs from "@atlaskit/ds-lib/merge-refs";
-import Heading from "@atlaskit/heading";
-// This is the smaller MoreIcon soon to be more easily accessible with the
-// ongoing icon project
-import MoreIcon from "@atlaskit/icon/glyph/editor/more";
-import { easeInOut } from "@atlaskit/motion/curves";
-import { mediumDurationMs } from "@atlaskit/motion/durations";
-import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
 import {
-    attachClosestEdge,
-    type Edge,
-    extractClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+  draggable,
+  dropTargetForElements,
+} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { Copy, Ellipsis, Plus } from 'lucide-react';
+import { RiDraggable } from "react-icons/ri";
+import { memo, useContext, useEffect, useRef, useState } from 'react';
+import invariant from 'tiny-invariant';
+
+import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
+import { unsafeOverflowAutoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/unsafe-overflow/element';
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
+import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
+import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source';
+import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
+import { Card, CardShadow } from '../../Components/Board/Card';
 import {
-    draggable,
-    dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { centerUnderPointer } from "@atlaskit/pragmatic-drag-and-drop/element/center-under-pointer";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-import { Box, Flex, Inline, Stack, xcss } from "@atlaskit/primitives";
-import { token } from "@atlaskit/tokens";
+  getColumnData,
+  isCardData,
+  isCardDropTargetData,
+  isColumnData,
+  isDraggingACard,
+  isDraggingAColumn,
+  TCardData,
+  TColumn,
+} from '../../misc/data';
+import { blockBoardPanningAttr } from '../../misc/data-attributes';
+import { isSafari } from '../../misc/is-safari';
+import { isShallowEqual } from '../../misc/is-shallow-equal';
+import { SettingsContext } from '../../misc/settings-context';
+import { DropDownButton, DropDownList, DropDownMenu } from "./DropDown"
+type TColumnState =
+  | {
+    type: 'is-card-over';
+    isOverChildCard: boolean;
+    dragging: DOMRect;
+  }
+  | {
+    type: 'is-column-over';
+  }
+  | {
+    type: 'idle';
+  }
+  | {
+    type: 'is-dragging';
+  }
+  | {
+    type: 'is-editing';
+  } | {
+    type: 'is-adding-card';
+  };
 
-import { type ColumnType } from "../../data/people";
-
-import { useBoardContext } from "../../misc/boardContext";
-import { Card } from "./Card";
-import {
-    ColumnContext,
-    type ColumnContextProps,
-    useColumnContext,
-} from "../../misc/columnContext";
-
-const columnStyles = xcss({
-    minWidth: "250px",
-    // height:"100%",
-    backgroundColor: "elevation.surface.sunken",
-    borderRadius: "border.radius.300",
-    transition: `background ${mediumDurationMs}ms ${easeInOut}`,
-    position: "relative",
-    /**
-     * TODO: figure out hover color.
-     * There is no `elevation.surface.sunken.hovered` token,
-     * so leaving this for now.
-     */
-});
-
-const stackStyles = xcss({
-    // allow the container to be shrunk by a parent height
-    // https://www.joshwcomeau.com/css/interactive-guide-to-flexbox/#the-minimum-size-gotcha-11
-    minHeight: "0",
-
-    // ensure our card list grows to be all the available space
-    // so that users can easily drop on en empty list
-    flexGrow: 1,
-});
-
-const scrollContainerStyles = xcss({
-    height: "100%",
-    overflowY: "auto",
-    // backgroundColor: "color.background.accent.blue.bolder"
-});
-
-const cardListStyles = xcss({
-    boxSizing: "border-box",
-    minHeight: "100%",
-    padding: "space.100",
-    gap: "space.100",
-    cursor: "default"
-});
-
-const columnHeaderStyles = xcss({
-    paddingInlineStart: "space.200",
-    paddingInlineEnd: "space.200",
-    paddingBlockStart: "space.100",
-    color: "color.text.subtlest",
-    userSelect: "none",
-    // backgroundColor: "color.background.accent.blue.bolder"
-});
-
-/**
- * Note: not making `'is-dragging'` a `State` as it is
- * a _parallel_ state to `'is-column-over'`.
- *
- * Our board allows you to be over the column that is currently dragging
- */
-type State =
-    | { type: "idle" }
-    | { type: "is-card-over" }
-    | { type: "is-column-over"; closestEdge: Edge | null }
-    | { type: "generate-safari-column-preview"; container: HTMLElement }
-    | { type: "generate-column-preview" };
-
-// preventing re-renders with stable state objects
-const idle: State = { type: "idle" };
-const isCardOver: State = { type: "is-card-over" };
-
-const stateStyles: {
-    [key in State["type"]]: ReturnType<typeof xcss> | undefined;
-} = {
-    idle: xcss({
-        cursor: "grab",
-    }),
-    "is-card-over": xcss({
-        backgroundColor: "color.background.selected.hovered",
-    }),
-    "is-column-over": undefined,
-    /**
-     * **Browser bug workaround**
-     *
-     * _Problem_
-     * When generating a drag preview for an element
-     * that has an inner scroll container, the preview can include content
-     * vertically before or after the element
-     *
-     * _Fix_
-     * We make the column a new stacking context when the preview is being generated.
-     * We are not making a new stacking context at all times, as this _can_ mess up
-     * other layering components inside of your card
-     *
-     * _Fix: Safari_
-     * We have not found a great workaround yet. So for now we are just rendering
-     * a custom drag preview
-     */
-    "generate-column-preview": xcss({
-        isolation: "isolate",
-    }),
-    "generate-safari-column-preview": undefined,
+const stateStyles: { [Key in TColumnState['type']]: string } = {
+  idle: 'cursor-grab',
+  // outline outline-2 outline-neutral-50
+  'is-card-over': '',
+  'is-dragging': 'opacity-40',
+  'is-column-over': 'bg-slate-900',
+  "is-editing": "",
+  "is-adding-card": ""
 };
 
-const isDraggingStyles = xcss({
-    opacity: 0.4,
+const colorOptions: ColorOption[] = [
+  { id: 'red', color: 'Red', tailwindClass: 'bg-red-500' },
+  { id: 'blue', color: 'Blue', tailwindClass: 'bg-blue-500' },
+  { id: 'green', color: 'Green', tailwindClass: 'bg-green-500' },
+]
+
+const idle = { type: 'idle' } satisfies TColumnState;
+
+/**
+ * A memoized component for rendering out the card.
+ *
+ * Created so that state changes to the column don't require all cards to be rendered
+ */
+const CardList = memo(function CardList({ column }: { column: TColumn }) {
+  // <Card key={card.id} card={card} columnId={column.title} />
+  return column.cards.map((card) => <Card key={card.id} card={card} columnId={column.title} />);
 });
 
-export const Column = memo(function Column({ column }: { column: ColumnType }) {
-    const columnId = column.columnId;
-    const columnRef = useRef<HTMLDivElement | null>(null);
-    const columnInnerRef = useRef<HTMLDivElement | null>(null);
-    const headerRef = useRef<HTMLDivElement | null>(null);
-    const scrollableRef = useRef<HTMLDivElement | null>(null);
-    const [state, setState] = useState<State>(idle);
-    const [isDragging, setIsDragging] = useState<boolean>(false);
+export function Column({ column, setData }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>; }) {
+  console.log('column', column)
+  const scrollableRef = useRef<HTMLDivElement | null>(null);
+  const outerFullHeightRef = useRef<HTMLDivElement | null>(null);
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const innerRef = useRef<HTMLDivElement | null>(null);
+  const { settings } = useContext(SettingsContext);
+  const [state, setState] = useState<TColumnState>(idle);
+  // const [selectedColor, setSelectedColor] = useState<string | null>(null)
 
-    const { instanceId, registerColumn } = useBoardContext();
 
-    // useEffect(() => {
-    //     console.log('state', state)
-    // }, [state])
+  // useEffect(() => {
+  //   console.log('state', JSON.stringify(state))
+  // }, [state])
 
-    useEffect(() => {
-        invariant(columnRef.current);
-        invariant(columnInnerRef.current);
-        invariant(headerRef.current);
-        invariant(scrollableRef.current);
-        return combine(
-            registerColumn({
-                columnId,
-                entry: {
-                    element: columnRef.current,
-                },
-            }),
-            draggable({
-                element: columnRef.current,
-                dragHandle: headerRef.current,
-                getInitialData: () => ({ columnId, type: "column", instanceId }),
-                onGenerateDragPreview: ({ nativeSetDragImage }) => {
-                    const isSafari: boolean =
-                        navigator.userAgent.includes("AppleWebKit") &&
-                        !navigator.userAgent.includes("Chrome");
 
-                    if (!isSafari) {
-                        setState({ type: "generate-column-preview" });
-                        return;
-                    }
-                    setCustomNativeDragPreview({
-                        getOffset: centerUnderPointer,
-                        render: ({ container }) => {
-                            setState({
-                                type: "generate-safari-column-preview",
-                                container,
-                            });
-                            return () => setState(idle);
-                        },
-                        nativeSetDragImage,
-                    });
-                },
-                onDragStart: () => {
-                    setIsDragging(true);
-                },
-                onDrop() {
-                    setState(idle);
-                    setIsDragging(false);
-                },
-            }),
-            dropTargetForElements({
-                element: columnInnerRef.current,
-                getData: () => ({ columnId }),
-                canDrop: ({ source }) => {
-                    return (
-                        source.data.instanceId === instanceId && source.data.type === "card"
-                    );
-                },
-                getIsSticky: () => true,
-                onDragEnter: () => setState(isCardOver),
-                onDragLeave: () => setState(idle),
-                onDragStart: () => setState(isCardOver),
-                onDrop: () => setState(idle),
-            }),
-            dropTargetForElements({
-                element: columnRef.current,
-                canDrop: ({ source }) => {
-                    return (
-                        source.data.instanceId === instanceId &&
-                        source.data.type === "column"
-                    );
-                },
-                getIsSticky: () => true,
-                getData: ({ input, element }) => {
-                    const data = {
-                        columnId,
-                    };
-                    return attachClosestEdge(data, {
-                        input,
-                        element,
-                        allowedEdges: ["left", "right"],
-                    });
-                },
-                onDragEnter: (args) => {
-                    setState({
-                        type: "is-column-over",
-                        closestEdge: extractClosestEdge(args.self.data),
-                    });
-                },
-                onDrag: (args) => {
-                    // skip react re-render if edge is not changing
-                    setState((current) => {
-                        const closestEdge: Edge | null = extractClosestEdge(args.self.data);
-                        if (
-                            current.type === "is-column-over" &&
-                            current.closestEdge === closestEdge
-                        ) {
-                            return current;
-                        }
-                        return {
-                            type: "is-column-over",
-                            closestEdge,
-                        };
-                    });
-                },
-                onDragLeave: () => {
-                    setState(idle);
-                },
-                onDrop: () => {
-                    setState(idle);
-                },
-            }),
-            autoScrollForElements({
-                element: scrollableRef.current,
-                canScroll: ({ source }) =>
-                    source.data.instanceId === instanceId && source.data.type === "card",
-            })
-        );
-    }, [columnId]);
-    // registerColumn, instanceId
+  useEffect(() => {
+    const outer = outerFullHeightRef.current;
+    const scrollable = scrollableRef.current;
+    const header = headerRef.current;
+    const inner = innerRef.current;
+    invariant(outer);
+    invariant(scrollable);
+    invariant(header);
+    invariant(inner);
 
-    const stableItems = useRef(column.items);
-    useEffect(() => {
-        stableItems.current = column.items;
-    }, [column.items]);
+    const data = getColumnData({ column });
 
-    const getCardIndex = useCallback((userId: string) => {
-        return stableItems.current.findIndex((item) => item.userId === userId);
-    }, []);
+    function setIsCardOver({ data, location }: { data: TCardData; location: DragLocationHistory }) {
+      const innerMost = location.current.dropTargets[0];
+      const isOverChildCard = Boolean(innerMost && isCardDropTargetData(innerMost.data));
 
-    const getNumCards = useCallback(() => {
-        return stableItems.current.length;
-    }, []);
+      const proposed: TColumnState = {
+        type: 'is-card-over',
+        dragging: data.rect,
+        isOverChildCard,
+      };
+      // optimization - don't update state if we don't need to.
+      setState((current) => {
+        if (isShallowEqual(proposed, current)) {
+          return current;
+        }
+        return proposed;
+      });
+    }
 
-    const contextValue: ColumnContextProps = useMemo(() => {
-        return { columnId, getCardIndex, getNumCards };
-    }, [columnId, getCardIndex, getNumCards]);
+    return combine(
+      draggable({
+        element: header,
+        getInitialData: () => data,
+        onGenerateDragPreview({ source, location, nativeSetDragImage }) {
+          const data = source.data;
+          invariant(isColumnData(data));
+          setCustomNativeDragPreview({
+            nativeSetDragImage,
+            getOffset: preserveOffsetOnSource({ element: header, input: location.current.input }),
+            render({ container }) {
+              // Simple drag preview generation: just cloning the current element.
+              // Not using react for this.
+              const rect = inner.getBoundingClientRect();
+              const preview = inner.cloneNode(true);
+              invariant(preview instanceof HTMLElement);
+              preview.style.width = `${rect.width}px`;
+              preview.style.height = `${rect.height}px`;
 
-    return (
-        <ColumnContext.Provider value={contextValue}>
-            <Flex
-                testId={`column-${columnId}`}
-                ref={columnRef}
-                direction="column"
-                xcss={[columnStyles, stateStyles[state.type]]}
+              // rotation of native drag previews does not work in safari
+              if (!isSafari()) {
+                preview.style.transform = 'rotate(4deg)';
+              }
+
+              container.appendChild(preview);
+            },
+          });
+        },
+        onDragStart() {
+          setState({ type: 'is-dragging' });
+        },
+        onDrop() {
+          setState(idle);
+        },
+      }),
+      dropTargetForElements({
+        element: outer,
+        getData: () => data,
+        canDrop({ source }) {
+          return isDraggingACard({ source }) || isDraggingAColumn({ source });
+        },
+        getIsSticky: () => true,
+        onDragStart({ source, location }) {
+          if (isCardData(source.data)) {
+            setIsCardOver({ data: source.data, location });
+          }
+        },
+        onDragEnter({ source, location }) {
+          if (isCardData(source.data)) {
+            setIsCardOver({ data: source.data, location });
+            return;
+          }
+          if (isColumnData(source.data) && source.data.column.title !== column.title) {
+            setState({ type: 'is-column-over' });
+          }
+        },
+        onDropTargetChange({ source, location }) {
+          if (isCardData(source.data)) {
+            setIsCardOver({ data: source.data, location });
+            return;
+          }
+        },
+        onDragLeave({ source }) {
+          if (isColumnData(source.data) && source.data.column.title === column.title) {
+            return;
+          }
+          setState(idle);
+        },
+        onDrop() {
+          setState(idle);
+        },
+      }),
+      autoScrollForElements({
+        canScroll({ source }) {
+          if (!settings.isOverElementAutoScrollEnabled) {
+            return false;
+          }
+
+          return isDraggingACard({ source });
+        },
+        getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
+        element: scrollable,
+      }),
+      unsafeOverflowAutoScrollForElements({
+        element: scrollable,
+        getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
+        canScroll({ source }) {
+          if (!settings.isOverElementAutoScrollEnabled) {
+            return false;
+          }
+
+          if (!settings.isOverflowScrollingEnabled) {
+            return false;
+          }
+
+          return isDraggingACard({ source });
+        },
+        getOverflow() {
+          return {
+            forTopEdge: {
+              top: 1000,
+            },
+            forBottomEdge: {
+              bottom: 1000,
+            },
+          };
+        },
+      }),
+    );
+  }, [column, settings]);
+
+  return (
+    <div className="flex w-72 flex-shrink-0 select-none flex-col" ref={outerFullHeightRef}>
+      <div
+        className={`flex max-h-full flex-col rounded-lg bg-slate-800 text-neutral-50`}
+        ref={innerRef}
+        {...{ [blockBoardPanningAttr]: true }}
+      >
+        {/* Extra wrapping element to make it easy to toggle visibility of content when a column is dragging over */}
+        <div
+          className={`flex max-h-full flex-col ${state.type === 'is-column-over' ? 'invisible' : ''}`}
+        >
+          <div className={`flex flex-row items-center align-middle justify-between px-3 py-4`} >
+
+            <div className={`${stateStyles[state.type]} ${state.type === "is-editing" && `invisible`}`} ref={headerRef}>
+              <RiDraggable />
+            </div>
+
+            <div className={`pl-2 font-bold leading-4 cursor-text`} onDoubleClick={() => setState({ type: 'is-editing' })} onBlur={() => setState({ type: 'idle' })}>
+              {
+                state.type === 'is-editing' ? <>
+                  <input
+                    // onChange={(e) => setText(e.target.value)}
+                    autoFocus
+                    placeholder="Column name"
+                    className="text-center w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
+                  />
+                  <div className="flex justify-center space-x-4 mt-2">
+                    {colorOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        // ${selectedColor === option.id ? 'scale-110' : ''}
+                        className={`w-5 h-5 rounded-full ${option.tailwindClass} focus:outline-none focus:ring-1 focus:ring-offset-1 transition-transform`}
+                      // onClick={() => setSelectedColor(option.id)}
+                      // aria-label={`Select ${option.color}`}
+                      // aria-pressed={selectedColor === option.id}
+                      />
+                    ))}
+                  </div>
+                </>
+                  : column.title
+              }
+            </div>
+            {/* <button
+              type="button"
+              className="rounded p-2 hover:bg-slate-700 active:bg-slate-600"
+              aria-label="More actions"
+            > */}
+            {/* <Ellipsis size={16} /> */}
+
+            <div className={`${state.type === "is-editing" && `invisible`}`}>
+              <DropDownMenu>
+                <DropDownButton />
+                <DropDownList />
+              </DropDownMenu>
+            </div>
+
+            {/* </button> */}
+          </div>
+          <div
+            className="flex flex-col overflow-y-auto [overflow-anchor:none] [scrollbar-color:theme(colors.slate.600)_theme(colors.slate.700)] [scrollbar-width:thin]"
+            ref={scrollableRef}
+          >
+            <CardList column={column} />
+            {state.type === 'is-card-over' && !state.isOverChildCard ? (
+              <div className="flex-shrink-0 px-3 py-1">
+                <CardShadow dragging={state.dragging} />
+              </div>
+            ) : null}
+          </div>
+          <div className="flex flex-row gap-2 p-3">
+            {
+              state.type === "is-adding-card" ? <input
+                // onChange={(e) => setText(e.target.value)}
+                autoFocus
+                placeholder="New card"
+                className="text-center w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
+                onBlur={() => setState({ type: 'idle' })}
+              /> :
+                <button
+                  type="button"
+                  className="flex flex-grow justify-center flex-row gap-1 rounded p-2 hover:bg-slate-700 active:bg-slate-600"
+                  onClick={() => setState({ type: "is-adding-card" })}
+                >
+                  <Plus size={16} />
+                </button>
+            }
+            {/* <button
+              type="button"
+              className="rounded p-2 hover:bg-slate-700 active:bg-slate-600"
+              aria-label="Create card from template"
             >
-                {/* This element takes up the same visual space as the column.
-            We are using a separate element so we can have two drop targets
-            that take up the same visual space (one for cards, one for columns)
-          */}
-                <Stack xcss={stackStyles} ref={columnInnerRef}>
-                    <Stack
-                        xcss={[stackStyles, isDragging ? isDraggingStyles : undefined]}
-                    >
-                        <Inline
-                            xcss={columnHeaderStyles}
-                            ref={headerRef}
-                            testId={`column-header-${columnId}`}
-                            spread="space-between"
-                            alignBlock="center"
-                        >
-                            <Heading
-                                size="xxsmall"
-                                as="span"
-                                testId={`column-header-title-${columnId}`}
-                            >
-                                {column.title}({column.items.length})
-                            </Heading>
-                            {/* <ActionMenu /> */}
-                           
-                        </Inline>
-                        <Box xcss={scrollContainerStyles} ref={scrollableRef}>
-                            <Stack xcss={cardListStyles} space="space.100">
-                                {column.items.map((item, i) => (
-                                    <Card item={item} key={item.userId} />
-                                ))}
-                            </Stack>
-                        </Box>
-                    </Stack>
-                </Stack>
-                {state.type === "is-column-over" && state.closestEdge && (
-                    <DropIndicator
-                        edge={state.closestEdge}
-                        gap={"8px"}
-                    />
-                )}
-            </Flex>
-            {state.type === "generate-safari-column-preview"
-                ? createPortal(<SafariColumnPreview column={column} />, state.container)
-                : null}
-        </ColumnContext.Provider>
-    );
-});
-
-const safariPreviewStyles = xcss({
-    width: "250px",
-    backgroundColor: "elevation.surface.sunken",
-    borderRadius: "border.radius",
-    padding: "space.200",
-});
-
-function SafariColumnPreview({ column }: { column: ColumnType }) {
-    return (
-        <Box xcss={[columnHeaderStyles, safariPreviewStyles]}>
-            <Heading size="xxsmall" as="span">
-                {column.title}
-            </Heading>
-        </Box>
-    );
-}
-
-function ActionMenu() {
-    return (
-        <DropdownMenu trigger={DropdownMenuTrigger}>
-            <ActionMenuItems />
-        </DropdownMenu>
-    );
-}
-
-function ActionMenuItems() {
-    const { columnId } = useColumnContext();
-    const { getColumns, reorderColumn } = useBoardContext();
-
-    const columns = getColumns();
-    const startIndex = columns.findIndex(
-        (column) => column.columnId === columnId
-    );
-
-    const moveLeft = useCallback(() => {
-        reorderColumn({
-            startIndex,
-            finishIndex: startIndex - 1,
-        });
-    }, [reorderColumn, startIndex]);
-
-    const moveRight = useCallback(() => {
-        reorderColumn({
-            startIndex,
-            finishIndex: startIndex + 1,
-        });
-    }, [reorderColumn, startIndex]);
-
-    const isMoveLeftDisabled = startIndex === 0;
-    const isMoveRightDisabled = startIndex === columns.length - 1;
-
-    return (
-        <DropdownItemGroup>
-            <DropdownItem onClick={moveLeft} isDisabled={isMoveLeftDisabled}>
-                Move left
-            </DropdownItem>
-            <DropdownItem onClick={moveRight} isDisabled={isMoveRightDisabled}>
-                Move right
-            </DropdownItem>
-        </DropdownItemGroup>
-    );
-}
-
-function DropdownMenuTrigger({
-    triggerRef,
-    ...triggerProps
-}: CustomTriggerProps) {
-    return (
-        <IconButton
-            ref={mergeRefs([triggerRef])}
-            appearance="subtle"
-            label="Actions"
-            spacing="compact"
-            icon={MoreIcon}
-            {...triggerProps}
-        />
-    );
+              <Copy size={16} />
+            </button> */}
+          </div>
+        </div>
+      </div>
+    </div >
+  );
 }
