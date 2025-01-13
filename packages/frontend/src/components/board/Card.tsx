@@ -2,6 +2,7 @@ import {
   draggable,
   dropTargetForElements,
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { X } from 'lucide-react';
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source';
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
@@ -15,8 +16,9 @@ import {
   extractClosestEdge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
-import { getCardData, getCardDropTargetData, isCardData, isDraggingACard, TCard } from '../../misc/data';
+import { getCardData, getCardDropTargetData, isCardData, isDraggingACard, TBoard, TCard } from '../../misc/data';
 import { isShallowEqual } from '../../misc/is-shallow-equal';
+import { TColumn } from '../../types/data';
 
 type TCardState =
   | {
@@ -64,12 +66,21 @@ export function CardDisplay({
   state,
   outerRef,
   innerRef,
+  column,
+  idx,
+  columnId,
+  setData
 }: {
   card: TCard;
   state: TCardState;
   outerRef?: React.MutableRefObject<HTMLDivElement | null>;
   innerRef?: MutableRefObject<HTMLDivElement | null>;
+  column: TColumn;
+  idx: number;
+  columnId: number;
+  setData: React.Dispatch<React.SetStateAction<TBoard>>
 }) {
+  // console.log('card', card)
   return (
     <div
       ref={outerRef}
@@ -92,7 +103,15 @@ export function CardDisplay({
             : undefined
         }
       >
-        <div>{card.description}</div>
+        {/* onClick={() => { setData(prev => { return ({ ...prev, columns: [...prev.columns, { title: columnId, cards:prev.columns }] }) }) }} */}
+        <div className='flex flex-row justify-between'>{card.description}<X onClick={() => {
+          setData((prev) => {
+            const columns = structuredClone(prev.columns)
+            columns[columnId].cards.splice(idx, 1)
+            return ({ ...prev, columns })
+          })
+        }} />
+        </div>
       </div>
       {/* Put a shadow after the item if closer to the bottom edge */}
       {state.type === 'is-over' && state.closestEdge === 'bottom' ? (
@@ -102,7 +121,7 @@ export function CardDisplay({
   );
 }
 
-export function Card({ card, columnId }: { card: TCard; columnId: string }) {
+export function Card({ card, columnId, column, setData, idx }: { card: TCard; columnId: number, setData: React.Dispatch<React.SetStateAction<TBoard>>, column: TColumn, idx: number }) {
   const outerRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
   const [state, setState] = useState<TCardState>(idle);
@@ -116,7 +135,7 @@ export function Card({ card, columnId }: { card: TCard; columnId: string }) {
       draggable({
         element: inner,
         getInitialData: ({ element }) =>
-          getCardData({ card, columnId, rect: element.getBoundingClientRect() }),
+          getCardData({ card, columnTitle: column.title, rect: element.getBoundingClientRect() }),
         onGenerateDragPreview({ nativeSetDragImage, location, source }) {
           const data = source.data;
           invariant(isCardData(data));
@@ -145,7 +164,7 @@ export function Card({ card, columnId }: { card: TCard; columnId: string }) {
         getIsSticky: () => true,
         canDrop: isDraggingACard,
         getData: ({ element, input }) => {
-          const data = getCardDropTargetData({ card, columnId });
+          const data = getCardDropTargetData({ card, columnTitle: column.title });
           return attachClosestEdge(data, { element, input, allowedEdges: ['top', 'bottom'] });
         },
         onDragEnter({ source, self }) {
@@ -200,9 +219,9 @@ export function Card({ card, columnId }: { card: TCard; columnId: string }) {
   }, [card, columnId]);
   return (
     <>
-      <CardDisplay outerRef={outerRef} innerRef={innerRef} state={state} card={card} />
+      <CardDisplay outerRef={outerRef} innerRef={innerRef} state={state} card={card} columnId={columnId} column={column} idx={idx} setData={setData} />
       {state.type === 'preview'
-        ? createPortal(<CardDisplay state={state} card={card} />, state.container)
+        ? createPortal(<CardDisplay state={state} card={card} column={column} columnId={columnId} idx={idx} setData={setData} />, state.container)
         : null}
     </>
   );

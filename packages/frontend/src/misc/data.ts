@@ -18,20 +18,20 @@ const cardKey = Symbol('card');
 export type TCardData = {
   [cardKey]: true;
   card: TCard;
-  columnId: string;
+  columnTitle: string;
   rect: DOMRect;
 };
 
 export function getCardData({
   card,
   rect,
-  columnId,
-}: Omit<TCardData, typeof cardKey> & { columnId: string }): TCardData {
+  columnTitle,
+}: Omit<TCardData, typeof cardKey> & { columnTitle: string }): TCardData {
   return {
     [cardKey]: true,
     rect,
     card,
-    columnId,
+    columnTitle,
   };
 }
 
@@ -51,7 +51,7 @@ const cardDropTargetKey = Symbol('card-drop-target');
 export type TCardDropTargetData = {
   [cardDropTargetKey]: true;
   card: TCard;
-  columnId: string;
+  columnTitle: string;
 };
 
 export function isCardDropTargetData(
@@ -62,14 +62,14 @@ export function isCardDropTargetData(
 
 export function getCardDropTargetData({
   card,
-  columnId,
+  columnTitle,
 }: Omit<TCardDropTargetData, typeof cardDropTargetKey> & {
-  columnId: string;
+  columnTitle: string;
 }): TCardDropTargetData {
   return {
     [cardDropTargetKey]: true,
     card,
-    columnId,
+    columnTitle,
   };
 }
 

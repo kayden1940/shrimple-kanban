@@ -27,6 +27,10 @@ export function Board({ initial }: { initial: TBoard }) {
     const scrollableRef = useRef<HTMLDivElement | null>(null);
     const { settings } = useContext(SettingsContext);
 
+    // useEffect(() => {
+    //     console.log('data', data)
+    // }, [data])
+
     useEffect(() => {
         const element = scrollableRef.current;
         invariant(element);
@@ -344,10 +348,19 @@ export function Board({ initial }: { initial: TBoard }) {
                 className={`flex h-full flex-row gap-3 overflow-x-auto p-3 [scrollbar-color:theme(colors.sky.600)_theme(colors.sky.800)] [scrollbar-width:thin] ${settings.isBoardMoreObvious ? 'rounded border-2 border-dashed' : ''}`}
                 ref={scrollableRef}
             >
-                {data.columns.map((column) => (
-                    <Column key={column.title} column={column} setData={setData} />
-                    // <h1>tbu</h1>
+                {data.columns.map((column, index) => (
+                    <Column key={column.title} column={column} columnId={index} setData={setData} />
                 ))}
+                <button className='bg-red-400 h-8' onClick={() => {
+                    setData((prev) => {
+                        return {
+                            ...prev,
+                            columns: [...prev.columns, { title: 'New Column', cards: [] }]
+                        }
+                    })
+                }}>
+                    add Column
+                </button>
             </div>
         </div>
         // <h1>Board component</h1>

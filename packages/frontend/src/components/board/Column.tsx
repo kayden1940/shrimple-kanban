@@ -73,13 +73,13 @@ const idle = { type: 'idle' } satisfies TColumnState;
  *
  * Created so that state changes to the column don't require all cards to be rendered
  */
-const CardList = memo(function CardList({ column }: { column: TColumn }) {
+const CardList = memo(function CardList({ column, setData, columnId }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, columnId: number }) {
   // <Card key={card.id} card={card} columnId={column.title} />
-  return column.cards.map((card) => <Card key={card.id} card={card} columnId={column.title} />);
+  return column.cards.map((card, idx) => <Card key={card.id} card={card} idx={idx} columnId={columnId} column={column} setData={setData} />);
 });
 
-export function Column({ column, setData }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>; }) {
-  console.log('column', column)
+export function Column({ column, setData, columnId }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, columnId: number }) {
+  // console.log('column', column)
   const scrollableRef = useRef<HTMLDivElement | null>(null);
   const outerFullHeightRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -297,7 +297,7 @@ export function Column({ column, setData }: { column: TColumn, setData: React.Di
             className="flex flex-col overflow-y-auto [overflow-anchor:none] [scrollbar-color:theme(colors.slate.600)_theme(colors.slate.700)] [scrollbar-width:thin]"
             ref={scrollableRef}
           >
-            <CardList column={column} />
+            <CardList column={column} columnId={columnId} setData={setData} />
             {state.type === 'is-card-over' && !state.isOverChildCard ? (
               <div className="flex-shrink-0 px-3 py-1">
                 <CardShadow dragging={state.dragging} />

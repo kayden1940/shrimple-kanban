@@ -21,13 +21,13 @@ function getInitialData(): TBoard {
     const columns: TColumn[] = [
         { title: 'Column A', cards: getCards({ amount: 60 }), color: 1 },
         { title: 'Column B', cards: getCards({ amount: 4 }) },
-        { title: 'Column C', cards: getCards({ amount: 30 }) },
-        { title: 'Column D', cards: getCards({ amount: 12 }) },
-        { title: 'Column E', cards: getCards({ amount: 0 }) },
-        { title: 'Column F', cards: getCards({ amount: 44 }) },
-        { title: 'Column G', cards: getCards({ amount: 4 }) },
-        { title: 'Column H', cards: getCards({ amount: 8 }) },
-        { title: 'Column I', cards: getCards({ amount: 30 }) },
+        // { title: 'Column C', cards: getCards({ amount: 30 }) },
+        // { title: 'Column D', cards: getCards({ amount: 12 }) },
+        // { title: 'Column E', cards: getCards({ amount: 0 }) },
+        // { title: 'Column F', cards: getCards({ amount: 44 }) },
+        // { title: 'Column G', cards: getCards({ amount: 4 }) },
+        // { title: 'Column H', cards: getCards({ amount: 8 }) },
+        // { title: 'Column I', cards: getCards({ amount: 30 }) },
     ];
 
     return {
