@@ -18,7 +18,7 @@ import {
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { getCardData, getCardDropTargetData, isCardData, isDraggingACard, TBoard, TCard } from '../../misc/data';
 import { isShallowEqual } from '../../misc/is-shallow-equal';
-import { TColumn } from '../../types/data';
+import { TColumn } from '../../misc/data';
 
 type TCardState =
   | {
@@ -39,7 +39,9 @@ type TCardState =
     type: 'preview';
     container: HTMLElement;
     dragging: DOMRect;
-  };
+  } | {
+    type: 'is-editing';
+  }
 
 const idle: TCardState = { type: 'idle' };
 
@@ -64,6 +66,7 @@ export function CardShadow({ dragging }: { dragging: DOMRect }) {
 export function CardDisplay({
   card,
   state,
+  setState,
   outerRef,
   innerRef,
   column,
@@ -73,6 +76,7 @@ export function CardDisplay({
 }: {
   card: TCard;
   state: TCardState;
+  setState: React.Dispatch<React.SetStateAction<TCardState>>
   outerRef?: React.MutableRefObject<HTMLDivElement | null>;
   innerRef?: MutableRefObject<HTMLDivElement | null>;
   column: TColumn;
@@ -80,7 +84,14 @@ export function CardDisplay({
   columnId: number;
   setData: React.Dispatch<React.SetStateAction<TBoard>>
 }) {
-  // console.log('card', card)
+  // console.log('', card)
+  // const inputed = useRef(card.title)
+  const [name, setName] = useState(card.title);
+
+  // useEffect(() => {
+  //   console.log('name', name)
+  // }, [name])
+
   return (
     <div
       ref={outerRef}
@@ -98,20 +109,73 @@ export function CardDisplay({
             ? {
               width: state.dragging.width,
               height: state.dragging.height,
-              transform: !isSafari() ? 'rotate(4deg)' : undefined,
+              transform: !isSafari() ? 'rotate(2deg)' : undefined,
             }
             : undefined
         }
       >
         {/* onClick={() => { setData(prev => { return ({ ...prev, columns: [...prev.columns, { title: columnId, cards:prev.columns }] }) }) }} */}
-        <div className='flex flex-row justify-between'>{card.description}<X onClick={() => {
-          setData((prev) => {
-            const columns = structuredClone(prev.columns)
-            columns[columnId].cards.splice(idx, 1)
-            return ({ ...prev, columns })
-          })
-        }} />
-        </div>
+
+        {(() => {
+          switch (state.type) {
+            case "is-editing":
+              return (
+                <div className='flex flex-row justify-between'>
+                  <input
+                    type='text'
+                    onInput={(e) => {
+                      setName((e.target as HTMLInputElement).value)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === `Enter`) {
+                        setState({ type: "idle" })
+                        if (name) {
+                          setData((prev) => {
+                            const columns = structuredClone(prev.columns)
+                            columns[columnId].cards[idx].title = name
+                            return ({ ...prev, columns })
+                          })
+                        } else {
+                          setData((prev) => {
+                            const columns = structuredClone(prev.columns)
+                            columns[columnId].cards.splice(idx, 1)
+                            return ({ ...prev, columns })
+                          })
+                        }
+                      }
+                    }}
+                    onBlur={() => {
+                      setState({ type: "idle" })
+                      if (name) {
+                        setData((prev) => {
+                          const columns = structuredClone(prev.columns)
+                          columns[columnId].cards[idx].title = name
+                          return ({ ...prev, columns })
+                        })
+                      }
+                    }}
+                    autoFocus
+                    // placeholder=""
+                    value={name}
+                    className="w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
+                  />
+                </div>
+              );
+
+            default:
+              return (
+                <div className='flex flex-row justify-between' onDoubleClick={() => { setState({ type: "is-editing" }) }}>{card.title}
+                  <X onClick={() => {
+                    setData((prev) => {
+                      const columns = structuredClone(prev.columns)
+                      columns[columnId].cards.splice(idx, 1)
+                      return ({ ...prev, columns })
+                    })
+                  }} />
+                </div>
+              );
+          }
+        })()}
       </div>
       {/* Put a shadow after the item if closer to the bottom edge */}
       {state.type === 'is-over' && state.closestEdge === 'bottom' ? (
@@ -171,7 +235,7 @@ export function Card({ card, columnId, column, setData, idx }: { card: TCard; co
           if (!isCardData(source.data)) {
             return;
           }
-          if (source.data.card.id === card.id) {
+          if (source.data.card.title === card.title) {
             return;
           }
           const closestEdge = extractClosestEdge(self.data);
@@ -185,7 +249,7 @@ export function Card({ card, columnId, column, setData, idx }: { card: TCard; co
           if (!isCardData(source.data)) {
             return;
           }
-          if (source.data.card.id === card.id) {
+          if (source.data.card.title === card.title) {
             return;
           }
           const closestEdge = extractClosestEdge(self.data);
@@ -205,7 +269,7 @@ export function Card({ card, columnId, column, setData, idx }: { card: TCard; co
           if (!isCardData(source.data)) {
             return;
           }
-          if (source.data.card.id === card.id) {
+          if (source.data.card.title === card.title) {
             setState({ type: 'is-dragging-and-left-self' });
             return;
           }
@@ -217,11 +281,16 @@ export function Card({ card, columnId, column, setData, idx }: { card: TCard; co
       }),
     );
   }, [card, columnId]);
+
+  // useEffect(() => {
+  //   console.log('state', state)
+  // }, [state])
+
   return (
     <>
-      <CardDisplay outerRef={outerRef} innerRef={innerRef} state={state} card={card} columnId={columnId} column={column} idx={idx} setData={setData} />
+      <CardDisplay outerRef={outerRef} innerRef={innerRef} state={state} setState={setState} card={card} columnId={columnId} column={column} idx={idx} setData={setData} />
       {state.type === 'preview'
-        ? createPortal(<CardDisplay state={state} card={card} column={column} columnId={columnId} idx={idx} setData={setData} />, state.container)
+        ? createPortal(<CardDisplay state={state} setState={setState} card={card} column={column} columnId={columnId} idx={idx} setData={setData} />, state.container)
         : null}
     </>
   );

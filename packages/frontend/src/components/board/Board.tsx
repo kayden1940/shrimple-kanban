@@ -21,15 +21,17 @@ import { unsafeOverflowAutoScrollForElements } from '@atlaskit/pragmatic-drag-an
 import { bindAll } from 'bind-event-listener';
 import { blockBoardPanningAttr } from '../../misc/data-attributes';
 import { CleanupFn } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
+import { Plus } from 'lucide-react';
+import TopBar from './TopBar';
 
 export function Board({ initial }: { initial: TBoard }) {
     const [data, setData] = useState(initial);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
     const { settings } = useContext(SettingsContext);
 
-    // useEffect(() => {
-    //     console.log('data', data)
-    // }, [data])
+    useEffect(() => {
+        console.log('data', data)
+    }, [data])
 
     useEffect(() => {
         const element = scrollableRef.current;
@@ -50,25 +52,25 @@ export function Board({ initial }: { initial: TBoard }) {
                     }
                     const dropTargetData = innerMost.data;
                     const homeColumnIndex = data.columns.findIndex(
-                        (column) => column.title === dragging.columnId,
+                        (column) => column.title === dragging.columnTitle,
                     );
                     const home: TColumn | undefined = data.columns[homeColumnIndex];
 
                     if (!home) {
                         return;
                     }
-                    const cardIndexInHome = home.cards.findIndex((card) => card.id === dragging.card.id);
+                    const cardIndexInHome = home.cards.findIndex((card) => card.title === dragging.card.title);
 
                     // dropping on a card
                     if (isCardDropTargetData(dropTargetData)) {
                         const destinationColumnIndex = data.columns.findIndex(
-                            (column) => column.title === dropTargetData.columnId,
+                            (column) => column.title === dropTargetData.columnTitle,
                         );
                         const destination = data.columns[destinationColumnIndex];
                         // reordering in home column
                         if (home === destination) {
                             const cardFinishIndex = home.cards.findIndex(
-                                (card) => card.id === dropTargetData.card.id,
+                                (card) => card.title === dropTargetData.card.title,
                             );
 
                             // could not find cards needed
@@ -109,7 +111,7 @@ export function Board({ initial }: { initial: TBoard }) {
                         }
 
                         const indexOfTarget = destination.cards.findIndex(
-                            (card) => card.id === dropTargetData.card.id,
+                            (card) => card.title === dropTargetData.card.title,
                         );
 
                         const closestEdge = extractClosestEdge(dropTargetData);
@@ -343,26 +345,29 @@ export function Board({ initial }: { initial: TBoard }) {
     }, []);
 
     return (
-        <div className={`flex h-full flex-col ${settings.isBoardMoreObvious ? 'px-32 py-20' : ''}`}>
-            <div
-                className={`flex h-full flex-row gap-3 overflow-x-auto p-3 [scrollbar-color:theme(colors.sky.600)_theme(colors.sky.800)] [scrollbar-width:thin] ${settings.isBoardMoreObvious ? 'rounded border-2 border-dashed' : ''}`}
-                ref={scrollableRef}
-            >
-                {data.columns.map((column, index) => (
-                    <Column key={column.title} column={column} columnId={index} setData={setData} />
-                ))}
-                <button className='bg-red-400 h-8' onClick={() => {
-                    setData((prev) => {
-                        return {
-                            ...prev,
-                            columns: [...prev.columns, { title: 'New Column', cards: [] }]
-                        }
-                    })
-                }}>
-                    add Column
-                </button>
+        <>
+            <TopBar boardName='tbu board name' />
+            <div className={`flex h-full flex-col ${settings.isBoardMoreObvious ? 'px-32 py-20' : ''}`}>
+                <div
+                    className={`flex h-full flex-row gap-3 overflow-x-auto p-3 [scrollbar-color:theme(colors.sky.600)_theme(colors.sky.800)] [scrollbar-width:thin] ${settings.isBoardMoreObvious ? 'rounded border-2 border-dashed' : ''}`}
+                    ref={scrollableRef}
+                >
+                    {data.columns.map((column, index) => (
+                        <Column key={column.title} column={column} columnId={index} setData={setData} />
+                    ))}
+                    <button className='bg-red-400 h-8' onClick={() => {
+                        setData((prev) => {
+                            return {
+                                ...prev,
+                                columns: [...prev.columns, { title: 'New Column', cards: [] }]
+                            }
+                        })
+                    }}>
+                        add Column
+                    </button>
+                </div>
             </div>
-        </div>
+        </>
         // <h1>Board component</h1>
     );
 }

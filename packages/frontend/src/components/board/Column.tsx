@@ -21,6 +21,7 @@ import {
   isColumnData,
   isDraggingACard,
   isDraggingAColumn,
+  TBoard,
   TCardData,
   TColumn,
 } from '../../misc/data';
@@ -75,7 +76,7 @@ const idle = { type: 'idle' } satisfies TColumnState;
  */
 const CardList = memo(function CardList({ column, setData, columnId }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, columnId: number }) {
   // <Card key={card.id} card={card} columnId={column.title} />
-  return column.cards.map((card, idx) => <Card key={card.id} card={card} idx={idx} columnId={columnId} column={column} setData={setData} />);
+  return column.cards.map((card, idx) => <Card key={card.title} card={card} idx={idx} columnId={columnId} column={column} setData={setData} />);
 });
 
 export function Column({ column, setData, columnId }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, columnId: number }) {
@@ -145,7 +146,7 @@ export function Column({ column, setData, columnId }: { column: TColumn, setData
 
               // rotation of native drag previews does not work in safari
               if (!isSafari()) {
-                preview.style.transform = 'rotate(4deg)';
+                preview.style.transform = 'rotate(2deg)';
               }
 
               container.appendChild(preview);
@@ -235,6 +236,8 @@ export function Column({ column, setData, columnId }: { column: TColumn, setData
     );
   }, [column, settings]);
 
+  const [newCardTitle, setNewCardTitle] = useState(``)
+
   return (
     <div className="flex w-72 flex-shrink-0 select-none flex-col" ref={outerFullHeightRef}>
       <div
@@ -287,7 +290,7 @@ export function Column({ column, setData, columnId }: { column: TColumn, setData
             <div className={`${state.type === "is-editing" && `invisible`}`}>
               <DropDownMenu>
                 <DropDownButton />
-                <DropDownList />
+                <DropDownList setData={setData} idx={columnId} />
               </DropDownMenu>
             </div>
 
@@ -307,27 +310,45 @@ export function Column({ column, setData, columnId }: { column: TColumn, setData
           <div className="flex flex-row gap-2 p-3">
             {
               state.type === "is-adding-card" ? <input
-                // onChange={(e) => setText(e.target.value)}
                 autoFocus
                 placeholder="New card"
-                className="text-center w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
-                onBlur={() => setState({ type: 'idle' })}
+                className="w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
+                onInput={(e) => {
+                  setNewCardTitle((e.target as HTMLInputElement).value)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === `Enter`) {
+                    setState({ type: 'idle' })
+                    if (newCardTitle) {
+                      setData((prev) => {
+                        const columns = structuredClone(prev.columns)
+                        columns[columnId].cards.push({ title: newCardTitle })
+                        return ({ ...prev, columns })
+                      })
+                    }
+                    setNewCardTitle(``)
+                  }
+                }}
+                onBlur={() => {
+                  setState({ type: 'idle' })
+                  if (newCardTitle) {
+                    setData((prev) => {
+                      const columns = structuredClone(prev.columns)
+                      columns[columnId].cards.push({ title: newCardTitle })
+                      return ({ ...prev, columns })
+                    })
+                  }
+                  setNewCardTitle(``)
+                }}
               /> :
                 <button
                   type="button"
-                  className="flex flex-grow justify-center flex-row gap-1 rounded p-2 hover:bg-slate-700 active:bg-slate-600"
+                  className="flex justify-center flex-grow flex-row gap-1 rounded p-2 hover:bg-slate-700 active:bg-slate-600"
                   onClick={() => setState({ type: "is-adding-card" })}
                 >
                   <Plus size={16} />
                 </button>
             }
-            {/* <button
-              type="button"
-              className="rounded p-2 hover:bg-slate-700 active:bg-slate-600"
-              aria-label="Create card from template"
-            >
-              <Copy size={16} />
-            </button> */}
           </div>
         </div>
       </div>

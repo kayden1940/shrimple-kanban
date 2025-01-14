@@ -1,6 +1,7 @@
 export type TCard = {
-  id: string;
-  description: string;
+  // id: string;
+  // description: string;
+  title: string;
 };
 
 export type TColumn = {

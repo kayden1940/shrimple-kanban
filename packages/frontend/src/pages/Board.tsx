@@ -1,5 +1,5 @@
 import React from 'react'
-import { TBoard, TCard, TColumn } from '../types/data';
+import { TBoard, TCard, TColumn } from '../misc/data';
 import { Board } from "../Components/Board/Board"
 
 function getInitialData(): TBoard {
@@ -11,8 +11,9 @@ function getInitialData(): TBoard {
             return Array.from({ length: amount }, (): TCard => {
                 const id = count++;
                 return {
-                    id: `card:${id}`,
-                    description: `Card ${id}`,
+                    // id: `card:${id}`,
+                    // description: `Card ${id}`,
+                    title: `Card ${id}`
                 };
             });
         };
