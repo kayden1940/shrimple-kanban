@@ -1,3 +1,4 @@
+// import { columns } from './../../../frontend/src/pages/Boards';
 import * as uuid from "uuid";
 import { Resource } from "sst";
 import { Util } from "@shrimple-kanban/core/util";
@@ -13,7 +14,7 @@ export const main = Util.handler(async (event) => {
         data = JSON.parse(event.body);
     }
 
-    const { title } = data
+    const { title, status, columns } = data
 
     if (!title) {
         throw new Error("title not found.");
@@ -24,7 +25,10 @@ export const main = Util.handler(async (event) => {
         Item: {
             prop: `board`,
             adr: `bd#${uuid.v1()}`,
-            title
+            title: title,
+            ...(status && { status: status }),
+            columns: columns ? columns : [],
+            lastUpdated: new Date().toISOString()
         },
     };
 

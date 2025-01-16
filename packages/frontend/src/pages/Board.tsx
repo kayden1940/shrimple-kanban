@@ -1,6 +1,6 @@
 import React from 'react'
 import { TBoard, TCard, TColumn } from '../misc/data';
-import { Board } from "../Components/Board/Board"
+import { Board } from "../components/Board/Board"
 
 function getInitialData(): TBoard {
     // Doing this so we get consistent ids on server and client

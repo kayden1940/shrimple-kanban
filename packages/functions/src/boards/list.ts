@@ -8,7 +8,10 @@ const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 export const main = Util.handler(async (event) => {
     const params = {
         TableName: Resource.Kanban.name,
-        KeyConditionExpression: "prop = board",
+        "KeyConditionExpression": "prop = :prop",
+        "ExpressionAttributeValues": {
+            ":prop": "board"
+        }
     };
 
     const result = await dynamoDb.send(new QueryCommand(params));

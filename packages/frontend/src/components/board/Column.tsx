@@ -13,7 +13,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source';
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
-import { Card, CardShadow } from '../../Components/Board/Card';
+import { Card, CardShadow } from './Card';
 import {
   getColumnData,
   isCardData,

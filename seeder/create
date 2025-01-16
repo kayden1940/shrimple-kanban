@@ -1,0 +1,28 @@
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"title": "board1", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"title": "board2", "status": "active", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"title": "board3", "status": "archive", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"title": "board4", "status": "active", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"title": "board5", "status": "active", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"title": "board6", "status": "active", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards
+curl -X POST \
+-H 'Content-Type: application/json' \
+-d '{"title": "board7", "status": "active", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards

@@ -1,7 +1,7 @@
 curl -X POST \
 -H 'Content-Type: application/json' \
--d '{"id": 1, "title": "board name"}' \
-https://9j0oe64hk0.execute-api.us-east-1.amazonaws.com/boards
+-d '{"title": "board name", "status": "active", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards
 
 curl -X POST \
 -H 'Content-Type: application/json' \
