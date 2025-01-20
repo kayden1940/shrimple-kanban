@@ -1,3 +1,8 @@
+curl -X PUT \
+-H 'Content-Type: application/json' \
+-d '{"title": "asd", "status": "on9", "content": "update", "columns": ["sugoi",{"sugoi":"true"}]}' \
+https://5aazrelhfd.execute-api.us-east-1.amazonaws.com/boards/bd--8ed965f0-d629-11ef-879b-d1e9ac88ed80
+
 curl -X POST \
 -H 'Content-Type: application/json' \
 -d '{"title": "board name", "status": "active", "columns": ["sugoi",{"sugoi":"true"}]}' \

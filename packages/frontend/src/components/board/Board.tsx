@@ -23,15 +23,48 @@ import { blockBoardPanningAttr } from '../../misc/data-attributes';
 import { CleanupFn } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
 import { Plus } from 'lucide-react';
 import TopBar from './TopBar';
+import { useLocation } from 'react-router';
+import { useMutation } from '@tanstack/react-query';
+import axios from "axios"
 
 export function Board({ initial }: { initial: TBoard }) {
-    const [data, setData] = useState(initial);
+    const location = useLocation()
+    // console.log('location.state', location.state)
+    location.state.columns = location.state.columnsR
+    // console.log('state', state)
+    const [data, setData] = useState(location.state);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
     const { settings } = useContext(SettingsContext);
 
-    useEffect(() => {
-        console.log('data', data)
-    }, [data])
+    // useEffect(() => {
+    //     console.log('data', data)
+    // }, [data])
+
+    // const { isPending, error, data: queryData, isFetching } = useQuery({
+    //     queryKey: ['repoData'],
+    //     queryFn: async () => {
+    //         const response = await fetch(
+    //             `${import.meta.env.VITE_API_URL}/boards`,
+    //         )
+    //         return await response.json()
+    //     },
+    // })
+
+    const mutation = useMutation({
+        mutationFn: (newColumns) => {
+            return axios({
+                method: 'put',
+                url: `${import.meta.env.VITE_API_URL}/boards/bd--8ed965f0-d629-11ef-879b-d1e9ac88ed80`,
+                responseType: "json",
+                data: {
+                    columns: newColumns,
+                    // status: 'fr??? status',
+                    // title: "fr??? title"
+                }
+            })
+        },
+    })
+
 
     useEffect(() => {
         const element = scrollableRef.current;
@@ -343,6 +376,12 @@ export function Board({ initial }: { initial: TBoard }) {
             cleanupActive?.();
         };
     }, []);
+
+    useEffect(() => {
+        console.log('data.columns', data.columns)
+        mutation.mutate(data.columns)
+        // console.log('data', data)
+    }, [data])
 
     return (
         <>

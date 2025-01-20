@@ -34,6 +34,7 @@
     "@radix-ui/react-slot": "^1.1.1",
     "@tanstack/react-query": "^5.64.1",
     "@tanstack/react-table": "^8.20.6",
+    "axios": "^1.7.9",
     "bind-event-listener": "^3.0.0",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",

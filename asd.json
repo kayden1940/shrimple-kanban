@@ -1,0 +1,13 @@
+{
+    "status": {
+        "TableName": "shrimple-kanban-juan-KanbanTable",
+        "Key": {
+            "prop": "board",
+            "adr": "bd#8ed965f0-d629-11ef-879b-d1e9ac88ed80"
+        },
+        "UpdateExpression": "SET content = :content",
+        "ExpressionAttributeValues": {
+            ":content": null
+        }
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "status": {
+        "version": "2.0",
+        "routeKey": "PUT /boards/{adr}",
+        "rawPath": "/boards/bd--8ed965f0-d629-11ef-879b-d1e9ac88ed80",
+        "rawQueryString": "",
+        "headers": {
+            "accept": "*/*",
+            "content-length": "72",
+            "content-type": "application/json",
+            "host": "5aazrelhfd.execute-api.us-east-1.amazonaws.com",
+            "user-agent": "curl/8.7.1",
+            "x-amzn-trace-id": "Root=1-678da9fe-54c9953e27cbc83d79e4c3b8",
+            "x-forwarded-for": "50.66.132.125",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https"
+        },
+        "requestContext": {
+            "accountId": "107412703935",
+            "apiId": "5aazrelhfd",
+            "domainName": "5aazrelhfd.execute-api.us-east-1.amazonaws.com",
+            "domainPrefix": "5aazrelhfd",
+            "http": {
+                "method": "PUT",
+                "path": "/boards/bd--8ed965f0-d629-11ef-879b-d1e9ac88ed80",
+                "protocol": "HTTP/1.1",
+                "sourceIp": "50.66.132.125",
+                "userAgent": "curl/8.7.1"
+            },
+            "requestId": "Eqd_4iamIAMEStA=",
+            "routeKey": "PUT /boards/{adr}",
+            "stage": "$default",
+            "time": "20/Jan/2025:01:42:22 +0000",
+            "timeEpoch": 1737337342882
+        },
+        "pathParameters": {
+            "adr": "bd--8ed965f0-d629-11ef-879b-d1e9ac88ed80"
+        },
+        "body": "{\"title\": \"asd\", \"status\": \"on9\", \"columns\": [\"sugoi\",{\"sugoi\":\"true\"}]}",
+        "isBase64Encoded": false
+    }
+}

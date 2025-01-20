@@ -20,7 +20,7 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <Routes>
           {/* <Route path="/" element={<App />} /> */}
-          <Route path="/boards/123" element={<Board />} />
+          <Route path="/boards/:id" element={<Board />} />
           <Route path="/boards" element={<Boards />} />
           <Route path="/" element={<App />} />
         </Routes>

@@ -6,20 +6,32 @@ import { UpdateCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 export const main = Util.handler(async (event) => {
-    const data = JSON.parse(event.body || "{}");
+
+    const data = JSON.parse(event.body || "{}")
+    const { pathParameters } = event
+    if (!pathParameters?.adr) return JSON.stringify({ status: false });
+    const { adr } = pathParameters
+
+    if (data.status) {
+
+    }
 
     const params = {
         TableName: Resource.Kanban.name,
         Key: {
             // The attributes of the item to be created
             prop: "board",
-            adr: event?.pathParameters?.adr,
+            adr: String(adr).replace("--", "#"),
         },
         // 'UpdateExpression' defines the attributes to be updated
         // 'ExpressionAttributeValues' defines the value in the update expression
-        UpdateExpression: "SET content = :content",
+        // UpdateExpression: "SET columns = :columns, status = :status, title = :title",
+        // ${data.status && `, statusR = :statusR`}${data.title && `, title = :title`}
+        UpdateExpression: `SET columnsR = :columnsR`,
         ExpressionAttributeValues: {
-            ":content": data.content || null,
+            ":columnsR": data.columns || null,
+            // ":statusR": data.status || null,
+            // ":title": data.title || null,
         },
     };
 
