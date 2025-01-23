@@ -29,16 +29,14 @@ import axios from "axios"
 
 export function Board({ initial }: { initial: TBoard }) {
     const location = useLocation()
-    // console.log('location.state', location.state)
     location.state.columns = location.state.columnsR
-    // console.log('state', state)
     const [data, setData] = useState(location.state);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
     const { settings } = useContext(SettingsContext);
 
-    // useEffect(() => {
-    //     console.log('data', data)
-    // }, [data])
+    useEffect(() => {
+        console.log('data', data)
+    }, [data])
 
     // const { isPending, error, data: queryData, isFetching } = useQuery({
     //     queryKey: ['repoData'],
@@ -58,8 +56,6 @@ export function Board({ initial }: { initial: TBoard }) {
                 responseType: "json",
                 data: {
                     columns: newColumns,
-                    // status: 'fr??? status',
-                    // title: "fr??? title"
                 }
             })
         },
@@ -392,7 +388,7 @@ export function Board({ initial }: { initial: TBoard }) {
                     ref={scrollableRef}
                 >
                     {data.columns.map((column, index) => (
-                        <Column key={column.title} column={column} columnId={index} setData={setData} />
+                        <Column key={column.title} column={column} columnId={index} setData={setData} data={data} />
                     ))}
                     <button className='bg-red-400 h-8' onClick={() => {
                         setData((prev) => {
