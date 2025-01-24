@@ -92,6 +92,23 @@ export function CardDisplay({
   //   console.log('name', name)
   // }, [name])
 
+  // useEffect(() => {
+  //   console.log('state.type', state.type)
+  // }, [state.type])
+
+  // const inputRef = useRef<HTMLInputElement | null>(null);
+  // inputRef.current?.focus()
+  // useEffect(() => {
+  //   if (state.type === 'is-editing') {
+  //     inputRef.current?.focus()
+  //   }
+  // }, [state.type]);
+
+  // useEffect(() => {
+  //   console.log('document.activeElement', document.activeElement)
+  // }, [document.activeElement])
+
+
   return (
     <div
       ref={outerRef}
@@ -116,67 +133,62 @@ export function CardDisplay({
       >
         {/* onClick={() => { setData(prev => { return ({ ...prev, columns: [...prev.columns, { title: columnId, cards:prev.columns }] }) }) }} */}
 
-        {(() => {
-          switch (state.type) {
-            case "is-editing":
-              return (
-                <div className='flex flex-row justify-between'>
-                  <input
-                    type='text'
-                    onInput={(e) => {
-                      setName((e.target as HTMLInputElement).value)
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === `Enter`) {
-                        setState({ type: "idle" })
-                        if (name) {
-                          setData((prev) => {
-                            const columns = structuredClone(prev.columns)
-                            columns[columnId].cards[idx].title = name
-                            return ({ ...prev, columns })
-                          })
-                        } else {
-                          setData((prev) => {
-                            const columns = structuredClone(prev.columns)
-                            columns[columnId].cards.splice(idx, 1)
-                            return ({ ...prev, columns })
-                          })
-                        }
-                      }
-                    }}
-                    onBlur={() => {
-                      setState({ type: "idle" })
-                      if (name) {
-                        setData((prev) => {
-                          const columns = structuredClone(prev.columns)
-                          columns[columnId].cards[idx].title = name
-                          return ({ ...prev, columns })
-                        })
-                      }
-                    }}
-                    autoFocus
-                    // placeholder=""
-                    value={name}
-                    className="w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
-                  />
-                </div>
-              );
-
-            default:
-              return (
-                <div className='flex flex-row justify-between' onDoubleClick={() => { setState({ type: "is-editing" }) }}>{card.title}
-                  <X onClick={() => {
+        {(state.type) === "is-editing" ?
+          <div className='flex flex-row justify-between'>
+            <input
+              type='text'
+              // ref={inputRef}
+              id="cardInput"
+              onInput={(e) => {
+                setName((e.target as HTMLInputElement).value)
+              }}
+              // autoFocus
+              // onFocus={() => console.log('Input focused!')}  // Check if focus works
+              onKeyDown={(e) => {
+                if (e.key === `Enter`) {
+                  setState({ type: "idle" })
+                  if (name) {
+                    setData((prev) => {
+                      const columns = structuredClone(prev.columns)
+                      columns[columnId].cards[idx].title = name
+                      return ({ ...prev, columns })
+                    })
+                  } else {
                     setData((prev) => {
                       const columns = structuredClone(prev.columns)
                       columns[columnId].cards.splice(idx, 1)
                       return ({ ...prev, columns })
                     })
-                  }} />
-                </div>
-              );
-          }
-        })()}
+                  }
+                }
+              }}
+              onBlur={() => {
+                setState({ type: "idle" })
+                if (name) {
+                  setData((prev) => {
+                    const columns = structuredClone(prev.columns)
+                    columns[columnId].cards[idx].title = name
+                    return ({ ...prev, columns })
+                  })
+                }
+              }}
+              value={name}
+              className="w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
+            />
+          </div>
+          :
+          <div className='flex flex-row justify-between' onDoubleClick={() => { setState({ type: "is-editing" }) }}>{card.title}
+            <X onClick={() => {
+              setData((prev) => {
+                const columns = structuredClone(prev.columns)
+                columns[columnId].cards.splice(idx, 1)
+                return ({ ...prev, columns })
+              })
+            }} />
+          </div>
+        }
       </div>
+
       {/* Put a shadow after the item if closer to the bottom edge */}
       {state.type === 'is-over' && state.closestEdge === 'bottom' ? (
         <CardShadow dragging={state.dragging} />

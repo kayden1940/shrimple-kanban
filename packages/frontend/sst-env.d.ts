@@ -18,5 +18,9 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "password": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
   }
 }

@@ -67,7 +67,7 @@ const colorOptions: ColorOption[] = [
   { id: 2, color: 'Red', tailwindClass: 'bg-red-500' },
   { id: 3, color: 'Blue', tailwindClass: 'bg-blue-500' },
   { id: 4, color: 'Green', tailwindClass: 'bg-green-500' },
-  { id: 6, color: 'Black', tailwindClass: 'bg-gray-800' },
+  { id: 5, color: 'Black', tailwindClass: 'bg-gray-800' },
 ]
 
 const idle = { type: 'idle' } satisfies TColumnState;
@@ -97,9 +97,9 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
   //   console.log('state', JSON.stringify(state))
   // }, [state])
 
-  useEffect(() => {
-    console.log('data', data)
-  }, [data])
+  // useEffect(() => {
+  //   console.log('data', data)
+  // }, [data])
 
   useEffect(() => {
     const outer = outerFullHeightRef.current;
@@ -245,23 +245,45 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
   const [newCardTitle, setNewCardTitle] = useState(``)
   const [name, setName] = useState(column.title);
 
+  // useEffect(() => {
+  //   console.log('data', data)
+  // }, [data])
+
+  // useEffect(() => {
+  //   console.log('column.color', column.color)
+  // }, [column.color])
+
+  const columnInputRef = useRef(null)
+
+  // useEffect(() => {
+  //   console.log('document.activeElement?.getAttribute("id")', document.activeElement?.getAttribute("id"))
+  // }, [document.activeElement?.getAttribute("id")])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!event.target.id) {
+        setState({ type: "idle" })
+        if (name) {
+          setData((prev) => {
+            const tmp = structuredClone(prev)
+            tmp.columns[columnId].title = name
+            return tmp
+          })
+        }
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => { document.removeEventListener("mousedown", handleClickOutside) };
+  }, [columnInputRef, name]);
+
   return (
-    <div className="flex w-72 flex-shrink-0 select-none flex-col" ref={outerFullHeightRef}
+    <div className="flex w-72 flex-shrink-0 select-none flex-col bg-red-300" ref={outerFullHeightRef}
     // onBlur={() => setState({ type: 'idle' })}
     >
       <div
-        className={`flex max-h-full flex-col rounded-lg ${colorOptions.find(c => c.id === (column.color ?? 0)).tailwindClass} text-neutral-50`}
+        className={`flex max-h-full flex-col rounded-lg ${colorOptions[column.color ?? 0].tailwindClass} text-neutral-50`}
         ref={innerRef}
         {...{ [blockBoardPanningAttr]: true }}
-        onMouseLeave={() => {
-          setState({ type: "idle" })
-          if (name) {
-            setData((prev) => {
-              prev.columns[columnId].title = name
-              return prev
-            })
-          }
-        }}
       >
         {/* Extra wrapping element to make it easy to toggle visibility of content when a column is dragging over */}
         <div
@@ -273,65 +295,73 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
               <RiDraggable />
             </div>
 
-            <div className={`pl-2 font-bold leading-4 cursor-text bg-red-400`}>
+            <div className={`font-bold leading-4 cursor-text bg-red-400`}>
               {
-                state.type === 'is-editing' ? <>
-                  <input
-                    type='text'
-                    onInput={(e) => {
-                      // e.persist();
-                      setName((e.target as HTMLInputElement).value)
-                    }}
-                    onKeyDown={(e) => {
-                      // e.persist();
-                      if (e.key === `Enter`) {
-                        setState({ type: "idle" })
-                        if (name) {
+                state.type === 'is-editing' ?
+                  <div className='flex flex-col'>
+                    <input
+                      type='text'
+                      onInput={(e) => {
+                        // e.persist();
+                        setName((e.target as HTMLInputElement).value)
+                      }}
+                      onKeyDown={(e) => {
+                        // e.persist();
+                        if (e.key === `Enter`) {
+                          setState({ type: "idle" })
+                          if (name) {
+                            setName("")
+                            setData((prev) => {
+                              const tmp = structuredClone(prev)
+                              tmp.columns[columnId].title = name
+                              return tmp
+                            })
+                          }
+                        } else {
                           setData((prev) => {
+                            const tmp = structuredClone(prev)
                             prev.columns[columnId].title = name
-                            return prev
+                            return tmp
                           })
                         }
-                      } else {
-                        setData((prev) => {
-                          prev.columns[columnId].title = name
-                          return prev
-                        })
                       }
-                    }
-                    }
-                    value={name}
-                    autoFocus
-                    placeholder="Column name"
-                    className="text-center w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
-                  />
-                  <div className="flex justify-center space-x-4 mt-2">
-                    {colorOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        // ${selectedColor === option.id ? 'scale-110' : ''}
-                        className={`w-5 h-5 rounded-full border-2 ${option.tailwindClass} transition-transform`}
-                        onClick={(e) => {
-                          // e.persist();
-                          // console.log("here");
-                          setState({ type: "idle" })
-                          setData((prev) => {
-                            prev.columns[columnId].color = option.id
-                            if (name) {
-                              prev.columns[columnId].title = name
-                            }
-                            return prev
-                          })
+                      }
+                      ref={columnInputRef}
+                      value={name}
+                      // onBlur={() => {
 
-                        }}
-                      // aria-label={`Select ${option.color}`}
-                      // aria-pressed={selectedColor === option.id}
-                      />
-                    ))}
+                      // }}
+                      // autoFocus
+                      placeholder="Column name"
+                      id={"columnInput"}
+                      className="text-center w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
+                    />
+                    <div className="flex justify-center space-x-4 mt-2">
+                      {colorOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          // ${selectedColor === option.id ? 'scale-110' : ''}
+                          className={`w-5 h-5 rounded-full border-2 ${option.tailwindClass} transition-transform`}
+                          onMouseDown={(e) => {
+                            // e.persist();
+                            // console.log("here");
+                            setState({ type: "idle" })
+                            setData((prev) => {
+                              prev.columns[columnId].color = option.id
+                              if (name) {
+                                prev.columns[columnId].title = name
+                              }
+                              return prev
+                            })
+                          }}
+                        // aria-label={`Select ${option.color}`}
+                        // aria-pressed={selectedColor === option.id}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </>
                   : <p onDoubleClick={(e) => {
-                    // e.persist();
+                    e.persist();
                     setState({ type: 'is-editing' })
                   }}>{column.title}</p>
               }
@@ -366,7 +396,7 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
           <div className="flex flex-row gap-2 p-3">
             {
               state.type === "is-adding-card" ? <input
-                // autoFocus
+                id="addCardInput"
                 placeholder="New card"
                 className="w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
                 onInput={(e) => {
@@ -374,8 +404,9 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
                 }}
                 onKeyDown={(e) => {
                   if (e.key === `Enter`) {
-                    // setState({ type: 'idle' })
+                    setState({ type: 'idle' })
                     if (newCardTitle) {
+                      setNewCardTitle("")
                       setData((prev) => {
                         const columns = structuredClone(prev.columns)
                         columns[columnId].cards.push({ title: newCardTitle })
@@ -385,17 +416,18 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
                     setNewCardTitle(``)
                   }
                 }}
-              // onBlur={() => {
-              //   // setState({ type: 'idle' })
-              //   if (newCardTitle) {
-              //     setData((prev) => {
-              //       const columns = structuredClone(prev.columns)
-              //       columns[columnId].cards.push({ title: newCardTitle })
-              //       return ({ ...prev, columns })
-              //     })
-              //   }
-              //   setNewCardTitle(``)
-              // }}
+                value={newCardTitle}
+                onBlur={() => {
+                  setState({ type: 'idle' })
+                  if (newCardTitle) {
+                    setData((prev) => {
+                      const columns = structuredClone(prev.columns)
+                      columns[columnId].cards.push({ title: newCardTitle })
+                      return ({ ...prev, columns })
+                    })
+                  }
+                  setNewCardTitle(``)
+                }}
               /> :
                 <button
                   type="button"

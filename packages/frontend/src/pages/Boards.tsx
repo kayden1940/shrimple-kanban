@@ -57,6 +57,8 @@ export type Board = {
 }
 
 
+
+
 interface Props { mode: "edit" | "add" }
 type Response = boolean
 
@@ -67,8 +69,8 @@ export const BoardConfigModal = createCallable<Props, Response>(({ call, mode })
     //     <button onClick={() => call.end(false)}>No</button>
     // </div>
     // onClose={setOpen} 
-    <Dialog open={true} onClose={() => call.end(true)} className={`relative z-10 ${call.ended ? 'animate-fade-out' : ''}`}>
-        <div className="animate-fade-in animate-duration-75">
+    <Dialog open={true} onClose={() => call.end(true)} className={`relative z-10 ${call.ended ? 'animate-fade-out' : ''} transition-opacity ease-in duration-700 opacity-100`}>
+        <div className="">
             <DialogBackdrop
                 transition
                 className="fixed inset-0 bg-gray-400/75 transition-opacity"
@@ -94,7 +96,7 @@ export const BoardConfigModal = createCallable<Props, Response>(({ call, mode })
                                             This action cannot be undone.
                                         </p>
                                     </div> */}
-                                <div className="sm:col-span-4 mt-6">
+                                <div className="sm:col-span-4 mt-4">
                                     <label htmlFor="username" className="block text-sm/6 font-medium text-gray-900">
                                         Board title*
                                     </label>
@@ -111,7 +113,7 @@ export const BoardConfigModal = createCallable<Props, Response>(({ call, mode })
                                         </div>
                                     </div>
                                 </div>
-                                <div className="sm:col-span-4 mt-2 mb-4">
+                                <div className="sm:col-span-4 mt-2">
                                     <label htmlFor="username" className="block text-sm/6 font-medium text-gray-900">
                                         Status
                                     </label>
@@ -131,7 +133,7 @@ export const BoardConfigModal = createCallable<Props, Response>(({ call, mode })
                             </div>
                             {/* </div> */}
                         </div>
-                        <div className="px-4 py-3 flex flex-row">
+                        <div className="px-4 mt-2 py-2 flex flex-row">
                             {mode === "edit" && <button
                                 type="button"
                                 // onClick={() => setOpen(false)}
@@ -160,7 +162,7 @@ export const BoardConfigModal = createCallable<Props, Response>(({ call, mode })
             </div>
         </div>
     </Dialog>
-), 120)
+))
 
 export const columns: ColumnDef<Board>[] = [
     {
@@ -250,6 +252,11 @@ export function Boards() {
     //     console.log('data', data)
     // }, [data])
 
+    // useEffect(() => {
+    //     console.log("here", import.meta.env.VITE_PASSWORD);
+    // }, [])
+
+
     const table = useReactTable({
         data,
         columns,
@@ -283,7 +290,7 @@ export function Boards() {
     if (queryData) {
         return <div className="h-screen flex flex-row justify-center items-center">
             <BoardConfigModal.Root />
-            <div className="size-3/4 border bg-gray-100 border-gray-400">
+            <div className="size-3/4 bg-gray-100 border">
                 <div className="flex justify-center items-center py-4">
                     <div className="flex flex-row w-full justify-center items-center">
                         <Input
@@ -292,14 +299,14 @@ export function Boards() {
                             onChange={(event) =>
                                 table.getColumn("title")?.setFilterValue(event.target.value)
                             }
-                            className="max-w-sm border border-gray-600 w-2/4 lg:w-full"
+                            className="max-w-sm border-y-gray-600 w-2/4 lg:w-full"
                         />
-                        <div className="cursor-pointer border rounded-md border-gray-700 bg-white ml-2" onClick={async () => { await BoardConfigModal.call({ mode: "add" }) }}>
+                        <div className="cursor-pointer rounded-md border border-gray-700 bg-white ml-2" onClick={async () => { await BoardConfigModal.call({ mode: "add" }) }}>
                             <Plus />
                         </div>
                     </div>
                 </div>
-                <div className="border">
+                <div className="border-y">
                     <Table>
                         <TableHeader>
                             {table.getHeaderGroups().map(headerGroup => (
@@ -319,7 +326,7 @@ export function Boards() {
                         </TableHeader>
                         <TableBody>
                             {table.getRowModel().rows.map((row, i) => (
-                                <tr key={row.id} className="hover:bg-gray-100 bg-gray-50 border-y border-gray-300">
+                                <tr key={row.id} className="hover:bg-gray-100 bg-gray-50 border-y border-y-gray-300">
                                     {row.getVisibleCells().map((cell) => {
                                         // console.log('cell', cell)
                                         if (cell.column.id === "options") {

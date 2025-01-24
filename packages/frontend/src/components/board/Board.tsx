@@ -34,9 +34,9 @@ export function Board({ initial }: { initial: TBoard }) {
     const scrollableRef = useRef<HTMLDivElement | null>(null);
     const { settings } = useContext(SettingsContext);
 
-    useEffect(() => {
-        console.log('data', data)
-    }, [data])
+    // useEffect(() => {
+    //     console.log('data', data)
+    // }, [data])
 
     // const { isPending, error, data: queryData, isFetching } = useQuery({
     //     queryKey: ['repoData'],
@@ -49,16 +49,18 @@ export function Board({ initial }: { initial: TBoard }) {
     // })
 
     const mutation = useMutation({
-        mutationFn: (newColumns) => {
+        mutationFn: (props) => {
+            const { columns, boardId } = props
             return axios({
                 method: 'put',
-                url: `${import.meta.env.VITE_API_URL}/boards/bd--8ed965f0-d629-11ef-879b-d1e9ac88ed80`,
+                url: `${import.meta.env.VITE_API_URL}/boards/${boardId}`,
                 responseType: "json",
                 data: {
-                    columns: newColumns,
+                    columns: columns,
                 }
             })
         },
+        onSuccess: ((data) => console.log('onSuccess', data))
     })
 
 
@@ -373,14 +375,20 @@ export function Board({ initial }: { initial: TBoard }) {
         };
     }, []);
 
+    const columnsSnapshot = useRef(JSON.stringify(data.columns))
     useEffect(() => {
-        console.log('data.columns', data.columns)
-        mutation.mutate(data.columns)
-        // console.log('data', data)
-    }, [data])
+        if (columnsSnapshot.current !== JSON.stringify(data.columns)) {
+            columnsSnapshot.current = JSON.stringify(data.columns)
+            mutation.mutate({ columns: data.columns, boardId: data.adr.replace("#", "--") })
+        }
+    }, [JSON.stringify(data.columns)]);
+
+    // const boardClickHandle = () => {
+    //     console.log("here", document.activeElement?.getAttribute("id"))
+    // }
 
     return (
-        <>
+        <div className='bg-amber-100 h-screen'>
             <TopBar boardName='tbu board name' />
             <div className={`flex h-full flex-col ${settings.isBoardMoreObvious ? 'px-32 py-20' : ''}`}>
                 <div
@@ -402,7 +410,7 @@ export function Board({ initial }: { initial: TBoard }) {
                     </button>
                 </div>
             </div>
-        </>
+        </div>
         // <h1>Board component</h1>
     );
 }

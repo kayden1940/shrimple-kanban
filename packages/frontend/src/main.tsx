@@ -11,6 +11,7 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query'
+import Login from './pages/Login.tsx';
 
 const queryClient = new QueryClient()
 
@@ -22,7 +23,8 @@ createRoot(document.getElementById('root')!).render(
           {/* <Route path="/" element={<App />} /> */}
           <Route path="/boards/:id" element={<Board />} />
           <Route path="/boards" element={<Boards />} />
-          <Route path="/" element={<App />} />
+          <Route path="/" element={<Login />} />
+          {/* <Route path="/" element={<App />} /> */}
         </Routes>
       </BrowserRouter>
     </SettingsContextProvider>
