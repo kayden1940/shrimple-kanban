@@ -9,8 +9,8 @@ export const main = Util.handler(async (event) => {
     const params = {
         TableName: Resource.Kanban.name,
         Key: {
-            prop: "board", // The id of the author
-            adr: event?.pathParameters?.adr, // The id of the note from the path
+            prop: "board",
+            adr: String(event?.pathParameters?.adr).replace("--", "#"),
         },
     };
 

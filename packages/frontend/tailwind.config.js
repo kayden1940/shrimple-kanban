@@ -14,7 +14,17 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
       },
-      colors: {}
+      colors: {},
+      animation: {
+        fade: 'fadeIn .9s ease-in-out',
+      },
+
+      keyframes: {
+        fadeIn: {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+      },
     }
   },
   plugins: [require("tailwindcss-animate"), animations],

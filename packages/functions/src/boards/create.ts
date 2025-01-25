@@ -14,7 +14,7 @@ export const main = Util.handler(async (event) => {
         data = JSON.parse(event.body);
     }
 
-    const { title, status, columns } = data
+    const { title, statusR, columnsR } = data
 
     if (!title) {
         throw new Error("title not found.");
@@ -26,8 +26,8 @@ export const main = Util.handler(async (event) => {
             prop: `board`,
             adr: `bd#${uuid.v1()}`,
             title: title,
-            ...(status && { status: status }),
-            columns: columns ? columns : [],
+            ...(statusR && { statusR: statusR }),
+            columnsR: columnsR ? columnsR : [],
             lastUpdated: new Date().toISOString()
         },
     };

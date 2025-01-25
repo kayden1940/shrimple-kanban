@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { TBoard, TCard, TColumn } from '../misc/data';
 import { Board } from "../components/Board/Board"
+import { actor } from '@/main';
+import { useSelector } from '@xstate/react';
+import { useNavigate } from 'react-router';
 
 function getInitialData(): TBoard {
     // Doing this so we get consistent ids on server and client
@@ -37,6 +40,14 @@ function getInitialData(): TBoard {
 }
 
 function BoardPage() {
+    const appState = useSelector(actor, (state) => state.value);
+    let navigate = useNavigate()
+    useEffect(() => {
+        if (appState === "login") {
+            navigate("/")
+        }
+    }, [appState])
+
     return (
         <Board initial={getInitialData()} />
     )

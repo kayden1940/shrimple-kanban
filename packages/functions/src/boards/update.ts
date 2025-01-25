@@ -11,31 +11,39 @@ export const main = Util.handler(async (event) => {
     const { pathParameters } = event
     if (!pathParameters?.adr) return JSON.stringify({ status: false });
     const { adr } = pathParameters
-
-    if (data.status) {
-
+    const { columnsR, statusR, title } = data
+    let params
+    if (columnsR) {
+        params = {
+            TableName: Resource.Kanban.name,
+            Key: {
+                prop: "board",
+                adr: String(adr).replace("--", "#"),
+            },
+            UpdateExpression: `SET columnsR = :columnsR, lastUpdated = :lastUpdated`,
+            ExpressionAttributeValues: {
+                ":columnsR": data.columnsR || null,
+                ":lastUpdated": new Date().toISOString()
+            },
+        };
+    }
+    if (statusR || title) {
+        params = {
+            TableName: Resource.Kanban.name,
+            Key: {
+                prop: "board",
+                adr: String(adr).replace("--", "#"),
+            },
+            UpdateExpression: `SET statusR = :statusR, title = :title, lastUpdated = :lastUpdated`,
+            ExpressionAttributeValues: {
+                ":statusR": data.statusR || null,
+                ":title": data.title || null,
+                ":lastUpdated": new Date().toISOString()
+            },
+        };
     }
 
-    const params = {
-        TableName: Resource.Kanban.name,
-        Key: {
-            // The attributes of the item to be created
-            prop: "board",
-            adr: String(adr).replace("--", "#"),
-        },
-        // 'UpdateExpression' defines the attributes to be updated
-        // 'ExpressionAttributeValues' defines the value in the update expression
-        // UpdateExpression: "SET columns = :columns, status = :status, title = :title",
-        // ${data.status && `, statusR = :statusR`}${data.title && `, title = :title`}
-        UpdateExpression: `SET columnsR = :columnsR`,
-        ExpressionAttributeValues: {
-            ":columnsR": data.columns || null,
-            // ":statusR": data.status || null,
-            // ":title": data.title || null,
-        },
-    };
-
+    if (!params) return JSON.stringify({ status: false });
     await dynamoDb.send(new UpdateCommand(params));
-
     return JSON.stringify({ status: true });
 });

@@ -56,7 +56,7 @@ export function Board({ initial }: { initial: TBoard }) {
                 url: `${import.meta.env.VITE_API_URL}/boards/${boardId}`,
                 responseType: "json",
                 data: {
-                    columns: columns,
+                    columnsR: columns,
                 }
             })
         },
@@ -387,16 +387,17 @@ export function Board({ initial }: { initial: TBoard }) {
     //     console.log("here", document.activeElement?.getAttribute("id"))
     // }
 
+
     return (
-        <div className='bg-amber-100 h-screen'>
-            <TopBar boardName='tbu board name' />
+        <div className='animate-fade-in h-screen'>
+            <TopBar boardName={data.title} />
             <div className={`flex h-full flex-col ${settings.isBoardMoreObvious ? 'px-32 py-20' : ''}`}>
                 <div
                     className={`flex h-full flex-row gap-3 overflow-x-auto p-3 [scrollbar-color:theme(colors.sky.600)_theme(colors.sky.800)] [scrollbar-width:thin] ${settings.isBoardMoreObvious ? 'rounded border-2 border-dashed' : ''}`}
                     ref={scrollableRef}
                 >
                     {data.columns.map((column, index) => (
-                        <Column key={column.title} column={column} columnId={index} setData={setData} data={data} />
+                        <Column key={`${column.title}-${index}`} column={column} columnId={index} setData={setData} data={data} />
                     ))}
                     <button className='bg-red-400 h-8' onClick={() => {
                         setData((prev) => {

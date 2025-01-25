@@ -63,11 +63,11 @@ const stateStyles: { [Key in TColumnState['type']]: string } = {
 
 const colorOptions: ColorOption[] = [
   { id: 0, color: 'White', tailwindClass: 'bg-gray-100' },
-  { id: 1, color: 'Orange', tailwindClass: 'bg-orange-500' },
-  { id: 2, color: 'Red', tailwindClass: 'bg-red-500' },
-  { id: 3, color: 'Blue', tailwindClass: 'bg-blue-500' },
-  { id: 4, color: 'Green', tailwindClass: 'bg-green-500' },
-  { id: 5, color: 'Black', tailwindClass: 'bg-gray-800' },
+  { id: 1, color: 'Orange', tailwindClass: 'bg-orange-400' },
+  { id: 2, color: 'Red', tailwindClass: 'bg-red-400' },
+  { id: 3, color: 'Blue', tailwindClass: 'bg-blue-400' },
+  { id: 4, color: 'Green', tailwindClass: 'bg-green-400' },
+  { id: 5, color: 'Black', tailwindClass: 'bg-gray-800', font: "text-neutral-50", cardBg: "", cardOutline: "", cardHighLight: `bg-slate`, iconColor: "" },
 ]
 
 const idle = { type: 'idle' } satisfies TColumnState;
@@ -77,9 +77,9 @@ const idle = { type: 'idle' } satisfies TColumnState;
  *
  * Created so that state changes to the column don't require all cards to be rendered
  */
-const CardList = memo(function CardList({ column, setData, columnId }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, columnId: number }) {
+const CardList = memo(function CardList({ column, setData, columnId, colorOption }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, columnId: number, colorOption }) {
   // <Card key={card.id} card={card} columnId={column.title} />
-  return column.cards.map((card, idx) => <Card key={card.title} card={card} idx={idx} columnId={columnId} column={column} setData={setData} />);
+  return column.cards.map((card, idx) => <Card key={card.title} card={card} idx={idx} columnId={columnId} column={column} setData={setData} colorOption={colorOption} />);
 });
 
 export function Column({ column, setData, data, columnId }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, data: any, columnId: number }) {
@@ -276,12 +276,17 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
     return () => { document.removeEventListener("mousedown", handleClickOutside) };
   }, [columnInputRef, name]);
 
+  useEffect(() => {
+    console.log('name', name)
+  }, [name])
+
+
   return (
-    <div className="flex w-72 flex-shrink-0 select-none flex-col bg-red-300" ref={outerFullHeightRef}
+    <div className="flex w-72 flex-shrink-0 select-none flex-col" ref={outerFullHeightRef}
     // onBlur={() => setState({ type: 'idle' })}
     >
       <div
-        className={`flex max-h-full flex-col rounded-lg ${colorOptions[column.color ?? 0].tailwindClass} text-neutral-50`}
+        className={`flex max-h-full flex-col rounded-lg ${colorOptions[column.color ?? 0].tailwindClass} ${colorOptions[column.color ?? 0].font}`}
         ref={innerRef}
         {...{ [blockBoardPanningAttr]: true }}
       >
@@ -295,7 +300,7 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
               <RiDraggable />
             </div>
 
-            <div className={`font-bold leading-4 cursor-text bg-red-400`}>
+            <div className={`font-bold leading-4 cursor-text`}>
               {
                 state.type === 'is-editing' ?
                   <div className='flex flex-col'>
@@ -328,10 +333,6 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
                       }
                       ref={columnInputRef}
                       value={name}
-                      // onBlur={() => {
-
-                      // }}
-                      // autoFocus
                       placeholder="Column name"
                       id={"columnInput"}
                       className="text-center w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
@@ -366,27 +367,18 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
                   }}>{column.title}</p>
               }
             </div>
-            {/* <button
-              type="button"
-              className="rounded p-2 hover:bg-slate-700 active:bg-slate-600"
-              aria-label="More actions"
-            > */}
-            {/* <Ellipsis size={16} /> */}
-
             <div className={`${state.type === "is-editing" && `invisible`}`}>
               <DropDownMenu>
                 <DropDownButton />
                 <DropDownList setData={setData} idx={columnId} />
               </DropDownMenu>
             </div>
-
-            {/* </button> */}
           </div>
           <div
             className="flex flex-col overflow-y-auto [overflow-anchor:none] [scrollbar-color:theme(colors.slate.600)_theme(colors.slate.700)] [scrollbar-width:thin]"
             ref={scrollableRef}
           >
-            <CardList column={column} columnId={columnId} setData={setData} />
+            <CardList colorOption={colorOptions[column.color ?? 0]} column={column} columnId={columnId} setData={setData} />
             {state.type === 'is-card-over' && !state.isOverChildCard ? (
               <div className="flex-shrink-0 px-3 py-1">
                 <CardShadow dragging={state.dragging} />
@@ -431,7 +423,7 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
               /> :
                 <button
                   type="button"
-                  className="flex justify-center flex-grow flex-row gap-1 rounded p-2 hover:bg-slate-700 active:bg-slate-600"
+                  className={`flex justify-center flex-grow flex-row gap-1 rounded p-2 hover:cursor-pointer hover:${colorOptions[column.color ?? 0].cardHighLight}-700 active:${colorOptions[column.color ?? 0].cardHighLight}-600`}
                   onClick={() => setState({ type: "is-adding-card" })}
                 >
                   <Plus size={16} />

@@ -197,7 +197,7 @@ export function CardDisplay({
   );
 }
 
-export function Card({ card, columnId, column, setData, idx }: { card: TCard; columnId: number, setData: React.Dispatch<React.SetStateAction<TBoard>>, column: TColumn, idx: number }) {
+export function Card({ card, columnId, column, setData, idx, colorOption }: { card: TCard; columnId: number, setData: React.Dispatch<React.SetStateAction<TBoard>>, column: TColumn, idx: number, colorOption }) {
   const outerRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
   const [state, setState] = useState<TCardState>(idle);

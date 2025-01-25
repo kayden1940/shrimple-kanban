@@ -1,7 +1,9 @@
+import { actor } from '@/main';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createCallable } from 'react-call'
-
+import { redirect, useNavigate } from 'react-router'
+import { useSelector } from "@xstate/react";
 // export const BoardConfigModal = createCallable<Props, Response>(({ call, mode }) => (
 //     // <div role="dialog" className="">
 //     //     <p>{mode}</p>
@@ -15,12 +17,18 @@ import { createCallable } from 'react-call'
 // ))
 
 function Login() {
+    const appState = useSelector(actor, (state) => state.value);
+    console.log('appState', appState)
+    // useEffect(() => {
+    //     console.log('appState', appState)
+    // }, [appState])
+
     const [state, setState] = useState({ type: "idle" })
     const [password, setPassword] = useState("")
-    // const input = useRef("")
     useEffect(() => {
         console.log('password', password)
     }, [password])
+    let navigate = useNavigate();
 
     return (
         <div>
@@ -28,13 +36,14 @@ function Login() {
                 <div className="">
                     <DialogBackdrop
                         transition
-                        className="fixed inset-0 bg-gray-400/75 transition-opacity"
+                        // className="fixed inset-0 bg-gray-100/75 transition-opacity"
                     />
                     <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4 text-center sm:items-center sm:p-0">
                             <DialogPanel
                                 transition
-                                className="relative sm:w-3/4 md:w-1/4 transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all -y-4 :translate-y-0 :scale-95"
+                                className={`${appState === "loggedIn" && `opacity-0 transition-opacity ease-out delay-25 duration-100`} animate-fade-in relative sm:w-3/4 md:w-1/5 transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all -y-4 :translate-y-0 :scale-95`}
+                                onTransitionEnd={() => navigate("/boards")}
                             >
                                 <div className="bg-white px-4 pt-5">
                                     {/* <div className="sm:flex sm:items-start"> */}
@@ -47,7 +56,7 @@ function Login() {
                                                 Login
                                             </DialogTitle>
                                             <div className="mt-2">
-                                                <div className="flex items-center rounded-md bg-white pl-3 outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
+                                                <div className="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
                                                     {/* <div className="shrink-0 select-none text-base text-gray-500 sm:text-sm/6">workcation.com/</div> */}
                                                     <input
                                                         id="password"
@@ -76,7 +85,14 @@ function Login() {
 
                                     <button
                                         type="button"
-                                        // onClick={() => setOpen(false)}
+                                        onClick={() => {
+                                            if (password !== import.meta.env.VITE_PASSWORD) {
+                                                setPassword("")
+                                            } else {
+                                                setPassword("")
+                                                actor.send({ type: "finish" })
+                                            }
+                                        }}
                                         className="px-3 py-2 rounded-md bg-lime-600 text-white text-sm font-semibold  hover:bg-lime-500"
                                     >
                                         Login
@@ -86,11 +102,9 @@ function Login() {
                         </div>
                     </div>
                 </div>
-            </Dialog>
-        </div>
+            </Dialog >
+        </div >
     )
 }
 
 export default Login
-
-// import.meta.env.VITE_PASSWORD

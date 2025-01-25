@@ -4,12 +4,12 @@ import { Link } from 'react-router'
 
 function TopBar({ boardName }: { boardName: string }) {
     return (
-        <div className="fixed top-4 right-4 flex items-center space-x-4 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-md">
+        <div className="fixed top-4 right-4 flex items-center space-x-1 bg-white dark:bg-gray-800 p-1 shadow-md border">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 {boardName}
             </span>
             <Link to={'/boards'}>
-                <Forward />
+                <Forward size={14} />
             </Link>
             {/* <Link
                 href={backLink}

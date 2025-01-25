@@ -1,1 +1,43 @@
 @import "tailwindcss";
+
+@theme {
+    --animate-wiggle: wiggle 1s ease-in-out infinite;
+
+    @keyframes wiggle {
+
+        0%,
+        100% {
+            transform: rotate(-90deg);
+        }
+
+        50% {
+            transform: rotate(90deg);
+        }
+    }
+
+    --animate-fade-in: fade-in 0.25s ease-in;
+
+    @keyframes fade-in {
+
+        0% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    --animate-fade-out: fade-out 0.85s ease-out 0.85s;
+
+    @keyframes fade-out {
+
+        0% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+        }
+    }
+}
