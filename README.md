@@ -32,6 +32,8 @@ A good idea to help categorizing and searching.
 - S3, storing encrypted password and the SPA.
 - Cloudfront, cdn of the SPA.
 
+IAC in sst v3 and Pulumi.
+
 ### Frontend
 - React 19
 - Tailwind v4
