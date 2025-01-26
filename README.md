@@ -3,7 +3,7 @@
 A minimalist modular kanban web application, made for self-deploy. Free and Open source.
 
 - automatically scaled, no need to maintain it yourself.
-- costs nothing(aws monthly free tier)
+- costs nothing*(aws monthly free tier)
 - responsive, fully compatible for mobile
 
 Made possible with IAC(sst&pulumi), serverless, nosql, and typical react stuff.
