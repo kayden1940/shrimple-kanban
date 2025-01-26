@@ -1,6 +1,6 @@
 <img width="1678" alt="image" src="https://github.com/user-attachments/assets/6ac71a76-d93c-4461-9502-c3c569b99689" />
 
-A minimalist modular kanban web application, made for self-deploy. Free and Open source.
+A minimalistic modular kanban web application, made for self-deploy. Free and Open source.
 
 - automatically scaled, nothing to maintain
 - costs nothing*(aws monthly free tier)
