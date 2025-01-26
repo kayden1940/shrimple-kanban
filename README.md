@@ -9,7 +9,7 @@ A minimalistic modular kanban web application, made for self-deploy. Free and Op
 Made possible with IAC(sst&pulumi), serverless, nosql, and typical react stuff.
 Originally made this for my team. Useful for small teams with tons of tasks to keep track of, but don't feel like paying saas nor maintaining server from self-hosting.
 
-[Video](https://files.catbox.moe/wokrix.mp4)
+[Video](https://twitter.com/kaydent_cc/status/1883634821475574031)
 
 ## deploy guide
 
