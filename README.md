@@ -1,75 +1,41 @@
-# Monorepo Template
+<img width="1678" alt="image" src="https://github.com/user-attachments/assets/6ac71a76-d93c-4461-9502-c3c569b99689" />
 
-A template to create a monorepo SST ❍ Ion project.
+A minimalist modular kanban web application, made for self-deploy. Free and Open source.
 
-## Get started
+- automatically scaled, no need to maintain it yourself.
+- costs nothing(aws monthly free tier)
+- responsive, fully compatible for mobile
 
-1. Use this template to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
+made possible with IAC(sst&pulumi), serverless, nosql, and typical react stuff.
+Originally made this for my team. Useful for small teams with tons of tasks to keep track of, but don't feel like paying saas nor maintaining server from self-hosting.
 
-2. Clone the new repo.
+## deploy guide
 
-   ```bash
-   git clone MY_APP
-   cd MY_APP
-   ```
+1. (have an aws account and configured AWS CLI in your machine)[https://sst.dev/docs/aws-accounts]
+3. `git clone git@github.com:kayden1940/shrimple-kanban.git`
+4. `sst secret set Password password-here --stage=production`
+5. `sst deploy --stage production`
 
-3. Rename the files in the project to the name of your app. 
+## User guide
 
-   ```bash
-   npx replace-in-file '/shrimple-kanban/g' MY_APP **/*.* --verbose
-   ```
+### Prefixing board and column names
+<img width="636" alt="image" src="https://github.com/user-attachments/assets/4bacdbcf-03cd-46da-9e6b-882aabe5d934" />
+A good idea to help categorizing and searching.
 
-4. Deploy!
-
-   ```bash
-   npm install
-   npx sst deploy
-   ```
-
-6. Optionally, enable [_git push to deploy_](https://ion.sst.dev/docs/console/#autodeploy).
-
-## Usage
-
-This template uses [npm Workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces). It has 3 packages to start with and you can add more it.
-
-1. `core/`
-
-   This is for any shared code. It's defined as modules. For example, there's the `Example` module.
-
-   ```ts
-   export module Example {
-     export function hello() {
-       return "Hello, world!";
-     }
-   }
-   ```
-
-   That you can use across other packages using.
-
-   ```ts
-   import { Example } from "@aws-monorepo/core/example";
-
-   Example.hello();
-   ```
-
-2. `functions/`
-
-   This is for your Lambda functions and it uses the `core` package as a local dependency.
-
-3. `scripts/`
-
-    This is for any scripts that you can run on your SST app using the `sst shell` CLI and [`tsx`](https://www.npmjs.com/package/tsx). For example, you can run the example script using:
-
-   ```bash
-   npm run shell src/example.ts
-   ```
-
+## Code
 ### Infrastructure
+- Dynamodb table for storing all related data of the board.
+- Lambda functions for api, accessing above table and the password.
+- S3, storing encrypted password and the SPA.
+- Cloudfront, cdn of the SPA.
 
-The `infra/` directory allows you to logically split the infrastructure of your app into separate files. This can be helpful as your app grows.
+### Frontend
+- React 19
+- Tailwind v4
+- Xstate v5
+- Pragmatic drag and drop
+- Vite
+- Some util libraries
 
-In the template, we have an `api.ts`, and `storage.ts`. These export the created resources. And are imported in the `sst.config.ts`.
-
----
-
-Join the SST community over on [Discord](https://discord.gg/sst) and follow us on [Twitter](https://twitter.com/SST_dev).
+### Remark
+The Code rn is quite rough, will be writing it at some point.
