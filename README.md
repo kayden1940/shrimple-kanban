@@ -13,7 +13,7 @@ Originally made this for my team. Useful for small teams with tons of tasks to k
 
 ## deploy guide
 
-1. (have an aws account and configured AWS CLI in your machine)[https://sst.dev/docs/aws-accounts]
+1. (https://sst.dev/docs/aws-accounts)[have an aws account and configured AWS CLI in your machine]
 3. `git clone git@github.com:kayden1940/shrimple-kanban.git`
 4. `sst secret set Password password-here --stage=production`
 5. `sst deploy --stage production`
