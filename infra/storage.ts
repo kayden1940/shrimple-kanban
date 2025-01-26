@@ -17,4 +17,4 @@ export const table = new sst.aws.Dynamo("Kanban", {
     primaryIndex: { hashKey: "prop", rangeKey: "adr" },  // Partition and sort key configuration
 });
 
-export const secret = new sst.Secret("password", "your-password-here");
+export const secret = new sst.Secret("Password", "your-password-here");

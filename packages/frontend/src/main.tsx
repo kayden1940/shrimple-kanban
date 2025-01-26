@@ -18,10 +18,6 @@ import { machine } from './machine.ts';
 const queryClient = new QueryClient()
 
 export const actor = createActor(machine);
-// actor.subscribe(snapshot => {
-//   console.log('State:', snapshot.value);
-//   console.log('Context', snapshot.context)
-// });
 actor.start();
 
 createRoot(document.getElementById('root')!).render(
@@ -29,7 +25,6 @@ createRoot(document.getElementById('root')!).render(
     <SettingsContextProvider>
       <BrowserRouter>
         <Routes>
-
           {/* <Route path="/" element={<App />} /> */}
           <Route path="/boards/:id" element={<Board />} />
           <Route path="/boards" element={<Boards />} />

@@ -25,7 +25,7 @@ import {
     TableHeader,
 } from "@/components/ui/table"
 import { useEffect, useMemo, useState } from "react"
-import { Link, useLocation, useNavigate } from "react-router"
+import { Link, Navigate, useLocation, useNavigate } from "react-router"
 import { createCallable } from 'react-call'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react"
 import axios from "axios"
@@ -281,7 +281,7 @@ export const columns: ColumnDef<Board>[] = [
         header: () => <></>,
         cell: ({ row }) => {
             const { status, title, id: boardId } = row.original
-            return <div className="mx-4 rounded-sm cursor-pointer" onClick={async () => {
+            return <div className="mx-4 rounded-4xl cursor-pointer hover:bg-gray-400" onClick={async () => {
                 await BoardConfigModal.call({ mode: "edit", status, title, boardId })
             }}><Ellipsis /></div>
         },
@@ -291,12 +291,9 @@ export const columns: ColumnDef<Board>[] = [
 
 export function Boards() {
     const appState = useSelector(actor, (state) => state.value);
-    let navigate = useNavigate()
-    useEffect(() => {
-        if (appState === "login") {
-            navigate("/")
-        }
-    }, [appState])
+    if (appState === "login") {
+        return <Navigate to="/" replace />;
+    }
 
     const location = useLocation()
 
@@ -355,16 +352,10 @@ export function Boards() {
         },
     })
 
-    // if (isPending) {
-    //     return <h1>pending</h1>
-    // }
+    // useEffect(() => {
+    //     console.log('queryData', (queryData ?? []).length)
+    // }, [queryData])
 
-    // if (isFetching) {
-    //     return <h1>fetching</h1>
-    // }
-    // if (error) {
-    //     return <h1>error</h1>
-    // }
 
     if (queryData) {
         return <div className={`h-screen flex flex-row justify-center items-center animate-fade-in ${isFetching || error && `opacity-0 transition-opacity ease-out delay-25 duration-150`}`}>
@@ -407,7 +398,7 @@ export function Boards() {
                                 ))}
                             </TableHeader>
                             <TableBody>
-                                {table.getRowModel().rows.map((row, i) => (
+                                {table.getSortedRowModel().rows.map((row, i) => (
                                     <tr key={row.id} className="hover:bg-gray-100 bg-gray-50 border-y border-y-gray-300">
                                         {row.getVisibleCells().map((cell) => {
                                             // console.log('cell', cell)

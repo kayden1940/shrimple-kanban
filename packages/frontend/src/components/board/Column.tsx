@@ -4,7 +4,7 @@ import {
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { Copy, Ellipsis, Plus } from 'lucide-react';
 import { RiDraggable } from "react-icons/ri";
-import { memo, useContext, useEffect, useRef, useState } from 'react';
+import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import invariant from 'tiny-invariant';
 
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
@@ -30,6 +30,7 @@ import { isSafari } from '../../misc/is-safari';
 import { isShallowEqual } from '../../misc/is-shallow-equal';
 import { SettingsContext } from '../../misc/settings-context';
 import { DropDownButton, DropDownList, DropDownMenu } from "./DropDown"
+
 type TColumnState =
   | {
     type: 'is-card-over';
@@ -55,19 +56,19 @@ const stateStyles: { [Key in TColumnState['type']]: string } = {
   idle: 'cursor-grab',
   // outline outline-2 outline-neutral-50
   'is-card-over': '',
-  'is-dragging': 'opacity-40',
+  'is-dragging': 'opacity-20',
   'is-column-over': 'bg-slate-900',
   "is-editing": "",
   "is-adding-card": ""
 };
 
 const colorOptions: ColorOption[] = [
-  { id: 0, color: 'White', tailwindClass: 'bg-gray-100' },
-  { id: 1, color: 'Orange', tailwindClass: 'bg-orange-400' },
-  { id: 2, color: 'Red', tailwindClass: 'bg-red-400' },
-  { id: 3, color: 'Blue', tailwindClass: 'bg-blue-400' },
-  { id: 4, color: 'Green', tailwindClass: 'bg-green-400' },
-  { id: 5, color: 'Black', tailwindClass: 'bg-gray-800', font: "text-neutral-50", cardBg: "", cardOutline: "", cardHighLight: `bg-slate`, iconColor: "" },
+  { id: 0, color: 'White', tailwindClass: 'bg-slate-200', front: "text-neutral-800", cardBg: "bg-gray-100", outline: "outline-slate-500", cardOutline: "outline-neutral-400", cardHover: `hover:bg-slate-300`, cardActive: `active:bg-slate-400` },
+  { id: 1, color: 'Orange', tailwindClass: 'bg-orange-400', front: "text-amber-50", cardBg: "bg-amber-500", outline: "outline-amber-100", cardOutline: "outline-amber-200", cardHover: `hover:bg-amber-400`, cardActive: `active:bg-amber-200` },
+  { id: 2, color: 'Red', tailwindClass: 'bg-rose-500', front: "text-rose-50", cardBg: "bg-rose-400", outline: "outline-pink-600", cardOutline: "outline-rose-200", cardHover: `hover:bg-pink-400`, cardActive: `active:bg-pink-200` },
+  { id: 3, color: 'Blue', tailwindClass: 'bg-blue-500', front: "text-cyan-50", cardBg: "bg-sky-400", outline: "outline-sky-100", cardOutline: "outline-cyan-200", cardHover: `hover:bg-sky-400`, cardActive: `active:bg-sky-200` },
+  { id: 4, color: 'Green', tailwindClass: 'bg-green-400', front: "text-teal-50", cardBg: "bg-emerald-500", outline: "outline-emerald-600", cardOutline: "outline-teal-100", cardHover: `hover:bg-emerald-300`, cardActive: `active:bg-emerald-200` },
+  { id: 5, color: 'Black', tailwindClass: 'bg-gray-800', front: "text-neutral-50", cardBg: "bg-slate-700", outline: "outline-slate-300", cardOutline: "outline-neutral-200", cardHover: `hover:bg-slate-500`, cardActive: `active:bg-slate-400` },
 ]
 
 const idle = { type: 'idle' } satisfies TColumnState;
@@ -78,28 +79,17 @@ const idle = { type: 'idle' } satisfies TColumnState;
  * Created so that state changes to the column don't require all cards to be rendered
  */
 const CardList = memo(function CardList({ column, setData, columnId, colorOption }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, columnId: number, colorOption }) {
-  // <Card key={card.id} card={card} columnId={column.title} />
   return column.cards.map((card, idx) => <Card key={card.title} card={card} idx={idx} columnId={columnId} column={column} setData={setData} colorOption={colorOption} />);
 });
 
 export function Column({ column, setData, data, columnId }: { column: TColumn, setData: React.Dispatch<React.SetStateAction<TBoard>>, data: any, columnId: number }) {
-  // console.log('column', column)
+  const colorOption = useMemo(() => colorOptions[column.color ?? 0], [column])
   const scrollableRef = useRef<HTMLDivElement | null>(null);
   const outerFullHeightRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
   const { settings } = useContext(SettingsContext);
   const [state, setState] = useState<TColumnState>(idle);
-  // const [selectedColor, setSelectedColor] = useState<string | null>(null)
-
-
-  // useEffect(() => {
-  //   console.log('state', JSON.stringify(state))
-  // }, [state])
-
-  // useEffect(() => {
-  //   console.log('data', data)
-  // }, [data])
 
   useEffect(() => {
     const outer = outerFullHeightRef.current;
@@ -244,21 +234,7 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
 
   const [newCardTitle, setNewCardTitle] = useState(``)
   const [name, setName] = useState(column.title);
-
-  // useEffect(() => {
-  //   console.log('data', data)
-  // }, [data])
-
-  // useEffect(() => {
-  //   console.log('column.color', column.color)
-  // }, [column.color])
-
   const columnInputRef = useRef(null)
-
-  // useEffect(() => {
-  //   console.log('document.activeElement?.getAttribute("id")', document.activeElement?.getAttribute("id"))
-  // }, [document.activeElement?.getAttribute("id")])
-
   useEffect(() => {
     function handleClickOutside(event) {
       if (!event.target.id) {
@@ -276,17 +252,10 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
     return () => { document.removeEventListener("mousedown", handleClickOutside) };
   }, [columnInputRef, name]);
 
-  useEffect(() => {
-    console.log('name', name)
-  }, [name])
-
-
   return (
-    <div className="flex w-72 flex-shrink-0 select-none flex-col" ref={outerFullHeightRef}
-    // onBlur={() => setState({ type: 'idle' })}
-    >
+    <div className={`flex w-72 flex-shrink-0 select-none flex-col opacity-95`} ref={outerFullHeightRef}>
       <div
-        className={`flex max-h-full flex-col rounded-lg ${colorOptions[column.color ?? 0].tailwindClass} ${colorOptions[column.color ?? 0].font}`}
+        className={`flex max-h-full flex-col rounded-lg ${colorOption.tailwindClass} ${colorOption.front} outline ${colorOption.outline}`}
         ref={innerRef}
         {...{ [blockBoardPanningAttr]: true }}
       >
@@ -331,11 +300,12 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
                         }
                       }
                       }
+                      autoFocus
                       ref={columnInputRef}
                       value={name}
                       placeholder="Column name"
                       id={"columnInput"}
-                      className="text-center w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
+                      className={`text-center w-full rounded border ${colorOption.cardHover} ${colorOption.cardActive} focus:outline-0`}
                     />
                     <div className="flex justify-center space-x-4 mt-2">
                       {colorOptions.map((option) => (
@@ -367,7 +337,7 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
                   }}>{column.title}</p>
               }
             </div>
-            <div className={`${state.type === "is-editing" && `invisible`}`}>
+            <div className={`cursor-pointer ${state.type === "is-editing" && `invisible`}`}>
               <DropDownMenu>
                 <DropDownButton />
                 <DropDownList setData={setData} idx={columnId} />
@@ -378,27 +348,42 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
             className="flex flex-col overflow-y-auto [overflow-anchor:none] [scrollbar-color:theme(colors.slate.600)_theme(colors.slate.700)] [scrollbar-width:thin]"
             ref={scrollableRef}
           >
-            <CardList colorOption={colorOptions[column.color ?? 0]} column={column} columnId={columnId} setData={setData} />
+            <CardList colorOption={colorOption} column={column} columnId={columnId} setData={setData} />
             {state.type === 'is-card-over' && !state.isOverChildCard ? (
               <div className="flex-shrink-0 px-3 py-1">
                 <CardShadow dragging={state.dragging} />
               </div>
             ) : null}
           </div>
-          <div className="flex flex-row gap-2 p-3">
-            {
-              state.type === "is-adding-card" ? <input
-                id="addCardInput"
-                placeholder="New card"
-                className="w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
-                onInput={(e) => {
-                  setNewCardTitle((e.target as HTMLInputElement).value)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === `Enter`) {
+          <div className='p-3'>
+            {column.cards.length < 20 && <div className="flex flex-row gap-2">
+              {
+                state.type === "is-adding-card" ? <input
+                  id="addCardInput"
+                  placeholder="New card"
+                  className={`w-full rounded border p-1 ${colorOption.front} focus:outline-0`}
+                  onInput={(e) => {
+                    setNewCardTitle((e.target as HTMLInputElement).value)
+                  }}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === `Enter`) {
+                      setState({ type: 'idle' })
+                      if (newCardTitle) {
+                        setNewCardTitle("")
+                        setData((prev) => {
+                          const columns = structuredClone(prev.columns)
+                          columns[columnId].cards.push({ title: newCardTitle })
+                          return ({ ...prev, columns })
+                        })
+                      }
+                      setNewCardTitle(``)
+                    }
+                  }}
+                  value={newCardTitle}
+                  onBlur={() => {
                     setState({ type: 'idle' })
                     if (newCardTitle) {
-                      setNewCardTitle("")
                       setData((prev) => {
                         const columns = structuredClone(prev.columns)
                         columns[columnId].cards.push({ title: newCardTitle })
@@ -406,32 +391,20 @@ export function Column({ column, setData, data, columnId }: { column: TColumn, s
                       })
                     }
                     setNewCardTitle(``)
-                  }
-                }}
-                value={newCardTitle}
-                onBlur={() => {
-                  setState({ type: 'idle' })
-                  if (newCardTitle) {
-                    setData((prev) => {
-                      const columns = structuredClone(prev.columns)
-                      columns[columnId].cards.push({ title: newCardTitle })
-                      return ({ ...prev, columns })
-                    })
-                  }
-                  setNewCardTitle(``)
-                }}
-              /> :
-                <button
-                  type="button"
-                  className={`flex justify-center flex-grow flex-row gap-1 rounded p-2 hover:cursor-pointer hover:${colorOptions[column.color ?? 0].cardHighLight}-700 active:${colorOptions[column.color ?? 0].cardHighLight}-600`}
-                  onClick={() => setState({ type: "is-adding-card" })}
-                >
-                  <Plus size={16} />
-                </button>
-            }
+                  }}
+                /> :
+                  <button
+                    type="button"
+                    className={`flex justify-center flex-grow flex-row gap-1 rounded p-2 hover:cursor-pointer ${colorOption.cardHover} ${colorOption.cardActive}`}
+                    onClick={() => setState({ type: "is-adding-card" })}
+                  >
+                    <Plus size={16} />
+                  </button>
+              }
+            </div>}
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }

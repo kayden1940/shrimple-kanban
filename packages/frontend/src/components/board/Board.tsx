@@ -4,7 +4,7 @@ import { reorderWithEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/r
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import invariant from 'tiny-invariant';
 import { Column } from './Column';
 import {
@@ -23,11 +23,19 @@ import { blockBoardPanningAttr } from '../../misc/data-attributes';
 import { CleanupFn } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
 import { Plus } from 'lucide-react';
 import TopBar from './TopBar';
-import { useLocation } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import axios from "axios"
+import { actor } from '@/main';
+import { useSelector } from '@xstate/react';
+import { useNavigate } from 'react-router';
 
 export function Board({ initial }: { initial: TBoard }) {
+    const appState = useSelector(actor, (state) => state.value);
+    if (appState === "login") {
+        return <Navigate to="/" replace />;
+    }
+
     const location = useLocation()
     location.state.columns = location.state.columnsR
     const [data, setData] = useState(location.state);
@@ -383,13 +391,33 @@ export function Board({ initial }: { initial: TBoard }) {
         }
     }, [JSON.stringify(data.columns)]);
 
-    // const boardClickHandle = () => {
-    //     console.log("here", document.activeElement?.getAttribute("id"))
-    // }
+    const massagedData = useMemo(() => {
+        //find duplicated names and add a plus
+        let d = structuredClone(data)
+        d.columns = d.columns.reduce((accu, curr, i) => {
+            const c = structuredClone(curr)
+            if (accu.find((ac) => ac.title === c.title)) { c.title = `${c.title}+` }//column titles
+            const cc = []
+            for (let index = 0; index < c.cards.length; index++) {
+                const ccard = c.cards[index];
+                if (!cc.find(card => card.title === ccard.title)) {
+                    cc.push(ccard)
+                }
+            }
+            c.cards = cc
+            accu.push(c)
+            return accu
+        }, [])
+        return d
+    }, [data])
 
+    useEffect(() => {
+        if (JSON.stringify(massagedData) !== JSON.stringify(data))
+            setData(massagedData)
+    }, [massagedData, data])
 
     return (
-        <div className='animate-fade-in h-screen'>
+        <div className='h-screen'>
             <TopBar boardName={data.title} />
             <div className={`flex h-full flex-col ${settings.isBoardMoreObvious ? 'px-32 py-20' : ''}`}>
                 <div
@@ -399,16 +427,19 @@ export function Board({ initial }: { initial: TBoard }) {
                     {data.columns.map((column, index) => (
                         <Column key={`${column.title}-${index}`} column={column} columnId={index} setData={setData} data={data} />
                     ))}
-                    <button className='bg-red-400 h-8' onClick={() => {
-                        setData((prev) => {
-                            return {
-                                ...prev,
-                                columns: [...prev.columns, { title: 'New Column', cards: [] }]
-                            }
-                        })
-                    }}>
-                        add Column
-                    </button>
+                    {
+                        data.columns.length < 8 &&
+                        <button className='h-10 rounded-lg outline-1 bg-gray-100 cursor-pointer hover:bg-white' onClick={() => {
+                            setData((prev) => {
+                                return {
+                                    ...prev,
+                                    columns: [...prev.columns, { title: 'New Column', cards: [] }]
+                                }
+                            })
+                        }}>
+                            <Plus size={40} />
+                        </button>
+                    }
                 </div>
             </div>
         </div>

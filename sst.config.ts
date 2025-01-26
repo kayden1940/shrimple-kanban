@@ -14,3 +14,5 @@ export default $config({
     await import("./infra/web");
   },
 });
+// sst secret set Password h407 --stage=production
+// tsc -b && 

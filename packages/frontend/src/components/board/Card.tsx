@@ -46,7 +46,7 @@ type TCardState =
 const idle: TCardState = { type: 'idle' };
 
 const innerStyles: { [Key in TCardState['type']]?: string } = {
-  idle: 'hover:outline outline-2 outline-neutral-50 cursor-grab',
+  idle: 'hover:outline-2 outline cursor-grab',
   'is-dragging': 'opacity-40',
 };
 
@@ -72,7 +72,8 @@ export function CardDisplay({
   column,
   idx,
   columnId,
-  setData
+  setData,
+  colorOption
 }: {
   card: TCard;
   state: TCardState;
@@ -82,32 +83,10 @@ export function CardDisplay({
   column: TColumn;
   idx: number;
   columnId: number;
-  setData: React.Dispatch<React.SetStateAction<TBoard>>
+  setData: React.Dispatch<React.SetStateAction<TBoard>>,
 }) {
-  // console.log('', card)
-  // const inputed = useRef(card.title)
+
   const [name, setName] = useState(card.title);
-
-  // useEffect(() => {
-  //   console.log('name', name)
-  // }, [name])
-
-  // useEffect(() => {
-  //   console.log('state.type', state.type)
-  // }, [state.type])
-
-  // const inputRef = useRef<HTMLInputElement | null>(null);
-  // inputRef.current?.focus()
-  // useEffect(() => {
-  //   if (state.type === 'is-editing') {
-  //     inputRef.current?.focus()
-  //   }
-  // }, [state.type]);
-
-  // useEffect(() => {
-  //   console.log('document.activeElement', document.activeElement)
-  // }, [document.activeElement])
-
 
   return (
     <div
@@ -119,7 +98,7 @@ export function CardDisplay({
         <CardShadow dragging={state.dragging} />
       ) : null}
       <div
-        className={`rounded bg-slate-700 p-2 text-slate-300 ${innerStyles[state.type]}`}
+        className={`rounded ${colorOption.cardBg} p-2 ${colorOption.front} ${innerStyles[state.type]} ${colorOption.cardOutline}`}
         ref={innerRef}
         style={
           state.type === 'preview'
@@ -134,17 +113,21 @@ export function CardDisplay({
         {/* onClick={() => { setData(prev => { return ({ ...prev, columns: [...prev.columns, { title: columnId, cards:prev.columns }] }) }) }} */}
 
         {(state.type) === "is-editing" ?
-          <div className='flex flex-row justify-between'>
-            <input
-              type='text'
+          <div className={`flex flex-row justify-between`}>
+            <textarea
+              rows={2}
+              cols={10}
+              maxLength={65}
               // ref={inputRef}
+
               id="cardInput"
               onInput={(e) => {
                 setName((e.target as HTMLInputElement).value)
               }}
-              // autoFocus
+              autoFocus
               // onFocus={() => console.log('Input focused!')}  // Check if focus works
               onKeyDown={(e) => {
+                e.stopPropagation();
                 if (e.key === `Enter`) {
                   setState({ type: "idle" })
                   if (name) {
@@ -173,12 +156,13 @@ export function CardDisplay({
                 }
               }}
               value={name}
-              className="w-full rounded border border-violet-400 bg-violet-400/20 p-1 text-neutral-50 placeholder-violet-300 focus:outline-0"
+              className="w-full outline-none resize-none"
             />
           </div>
           :
-          <div className='flex flex-row justify-between' onDoubleClick={() => { setState({ type: "is-editing" }) }}>{card.title}
-            <X onClick={() => {
+          <div className='flex flex-row justify-between group' onDoubleClick={() => { setState({ type: "is-editing" }) }}>
+            <p className={`z-0 truncate w-full`}>{card.title}</p>
+            <X className='hidden group-hover:inline cursor-pointer' onClick={() => {
               setData((prev) => {
                 const columns = structuredClone(prev.columns)
                 columns[columnId].cards.splice(idx, 1)
@@ -300,9 +284,9 @@ export function Card({ card, columnId, column, setData, idx, colorOption }: { ca
 
   return (
     <>
-      <CardDisplay outerRef={outerRef} innerRef={innerRef} state={state} setState={setState} card={card} columnId={columnId} column={column} idx={idx} setData={setData} />
+      <CardDisplay outerRef={outerRef} innerRef={innerRef} state={state} setState={setState} card={card} columnId={columnId} column={column} idx={idx} setData={setData} colorOption={colorOption} />
       {state.type === 'preview'
-        ? createPortal(<CardDisplay state={state} setState={setState} card={card} column={column} columnId={columnId} idx={idx} setData={setData} />, state.container)
+        ? createPortal(<CardDisplay state={state} setState={setState} card={card} column={column} columnId={columnId} idx={idx} setData={setData} colorOption={colorOption} />, state.container)
         : null}
     </>
   );
