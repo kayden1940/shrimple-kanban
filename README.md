@@ -20,6 +20,7 @@ Originally made this for my team. Useful for small teams with tons of tasks to k
 
 ### Prefixing board and column names
 <img width="636" alt="image" src="https://github.com/user-attachments/assets/4bacdbcf-03cd-46da-9e6b-882aabe5d934" />
+
 A good idea to help categorizing and searching.
 
 ## Code
