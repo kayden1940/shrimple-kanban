@@ -1,6 +1,6 @@
 <img width="1678" alt="image" src="https://github.com/user-attachments/assets/6ac71a76-d93c-4461-9502-c3c569b99689" />
 
-A minimalistic modular kanban web application, made for self-deploy. Free and Open source.
+A minimalistic modular kanban web application, made for self-deploy. Free and open source.
 
 - automatically scaled, nothing to maintain
 - costs nothing*(aws monthly free tier)
@@ -43,4 +43,4 @@ IAC in sst v3 and Pulumi.
 - Some util libraries
 
 ### Remark
-I made this in a rush so the Code rn is a bit rough, will be rewriting it at some point.
+I made this in a rush so the code rn is a bit rough, will be rewriting it at some point.
