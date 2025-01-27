@@ -43,4 +43,4 @@ IAC in sst v3 and Pulumi.
 - Some util libraries
 
 ### Remark
-I made this in a rush so the code rn is a bit rough, will be rewriting it at some point.
+I made this in a rush so the code rn is a bit rough, will be refactoring it at some point.
