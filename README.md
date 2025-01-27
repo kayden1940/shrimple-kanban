@@ -18,7 +18,7 @@ Originally made this for my team. Useful for small teams with tons of tasks to k
 4. `sst secret set Password password-here --stage=production`
 5. `sst deploy --stage production`
 
-## User guide
+## Usage practices
 
 ### Prefixing board and column names
 <img width="636" alt="image" src="https://github.com/user-attachments/assets/4bacdbcf-03cd-46da-9e6b-882aabe5d934" />
