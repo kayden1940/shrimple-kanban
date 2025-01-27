@@ -11,7 +11,7 @@ Originally made this for my team. Useful for small teams with tons of tasks to k
 
 [Video](https://twitter.com/kaydent_cc/status/1883634821475574031)
 
-## deploy guide
+## Deploy guide
 
 1. [have an aws account and configured AWS CLI in your machine](https://sst.dev/docs/aws-accounts)
 3. `git clone git@github.com:kayden1940/shrimple-kanban.git`
